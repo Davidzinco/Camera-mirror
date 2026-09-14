@@ -1,0 +1,2 @@
+# Tkinter and native webcam dependencies are installed through the OS package manager.
+Pillow
