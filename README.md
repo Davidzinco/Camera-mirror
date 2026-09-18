@@ -1,5 +1,9 @@
 # Camera Mirror
 
+Rencana fitur kamera antarkomputer melalui Wi-Fi, mikrofon HP, audio, dukungan
+Windows/Linux, dan UI dark mode dicatat di [FEATURE_PLAN.md](FEATURE_PLAN.md).
+Dokumen tersebut adalah rencana pengembangan; fitur di dalamnya belum tersedia.
+
 Aplikasi desktop untuk memakai kamera Android sebagai webcam Linux. Tampilan
 menggunakan krem, putih hangat, dan biru keabu-abuan. Pengaturan utama cukup
 **koneksi**, **kamera depan/belakang**, **kualitas**, dan **Mulai/Matikan kamera**.
