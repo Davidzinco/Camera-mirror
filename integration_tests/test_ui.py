@@ -11,7 +11,7 @@ AVAILABLE = all(importlib.util.find_spec(name) for name in ('PySide6', 'aiortc',
 if AVAILABLE:
     os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
     import numpy as np
-    from PySide6.QtCore import QSettings
+    from PySide6.QtCore import QPoint, QSettings
     from PySide6.QtGui import QColor, QImage
     from PySide6.QtMultimedia import QVideoFrame
     from PySide6.QtWidgets import QApplication
@@ -76,6 +76,38 @@ class DesktopUiTests(unittest.TestCase):
         self.assertIn('Kamera belum ditemukan', w.status.text())
         self.assertIsNone(w.worker)
         self.assertFalse(w.pending_capture)
+
+    def test_compact_layout_keeps_actions_visible_and_settings_reachable(self):
+        w = self.window
+        w.resize(680, 520)
+        for role in (0, 1):
+            w.role.setCurrentIndex(role)
+            w.advanced.hide()
+            w.toggle_advanced()
+            self.app.processEvents()
+            self.app.processEvents()
+            self.assertEqual((w.width(), w.height()), (680, 520))
+            self.assertEqual(w.settings_scroll.horizontalScrollBar().maximum(), 0)
+            for control in (w.start_button, w.stop_button, w.preview):
+                position = control.mapTo(w, QPoint(0, 0))
+                self.assertGreaterEqual(position.x(), 0)
+                self.assertGreaterEqual(position.y(), 0)
+                self.assertLessEqual(position.x() + control.width(), w.width())
+                self.assertLessEqual(position.y() + control.height(), w.height())
+            viewport = w.settings_scroll.viewport()
+            position = w.preview_only.mapTo(viewport, QPoint(0, 0))
+            self.assertGreaterEqual(position.y(), 0)
+            self.assertLessEqual(position.y() + w.preview_only.height(), viewport.height())
+
+        w.role.setCurrentIndex(0)
+        w.invite_box.show()
+        w.outgoing.setPlainText('cm1:' + 'a' * 500)
+        self.app.processEvents()
+        w.settings_scroll.ensureWidgetVisible(w.copy)
+        self.app.processEvents()
+        self.assertEqual(w.settings_scroll.horizontalScrollBar().maximum(), 0)
+        self.assertTrue(w.settings_scroll.viewport().rect().contains(
+            w.copy.mapTo(w.settings_scroll.viewport(), w.copy.rect().center())))
 
     def test_capture_converts_padded_rows_and_ignores_frames_after_stop(self):
         w = self.window

@@ -15,7 +15,7 @@ tersedia. Fitur Android/Linux yang sudah ada dijelaskan di bawah ini.
 ## Kamera Android pada Linux
 
 Aplikasi desktop untuk memakai kamera Android sebagai webcam Linux. Tampilan
-kini menggunakan tema gelap dengan aksen biru. Pengaturan utama cukup
+menggunakan tema gelap netral dengan kontrol ringkas dan aksen merah redup. Pengaturan utama cukup
 **koneksi**, **kamera depan/belakang**, **kualitas**, dan **Mulai/Matikan kamera**.
 Video diatur ke **30 fps**, sesuai preferensi pengguna dan kemampuan HP yang diuji.
 

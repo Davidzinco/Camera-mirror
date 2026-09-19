@@ -15,7 +15,7 @@ from PySide6.QtNetwork import QNetworkInterface
 from PySide6.QtWidgets import (
     QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QGroupBox,
     QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit,
-    QPushButton, QScrollArea, QSpinBox, QVBoxLayout, QWidget,
+    QPushButton, QScrollArea, QSizePolicy, QSpinBox, QVBoxLayout, QWidget,
 )
 
 from .frames import LatestFrame
@@ -23,38 +23,49 @@ from .pairing import Invitation
 from .session import Session, SessionWorker
 
 THEMES = {
-    'dark': dict(bg='#111820', panel='#1b2632', text='#edf3f8', muted='#b0bfce',
-                 border='#405267', accent='#8dcfff', ink='#112433', field='#131e29'),
-    'light': dict(bg='#eef3f7', panel='#ffffff', text='#172c3f', muted='#496175',
-                  border='#a4b7c7', accent='#145f91', ink='#ffffff', field='#f6f9fc'),
+    'dark': dict(bg='#1c1c1b', panel='#242423', text='#eeeeec', muted='#b0b0ad',
+                 border='#3d3d3a', accent='#a14b45', hover='#b35851', ink='#ffffff', field='#2e2e2c'),
+    'light': dict(bg='#eeede9', panel='#f7f6f2', text='#252523', muted='#62625d',
+                  border='#bdbdb5', accent='#93413b', hover='#a14b45', ink='#ffffff', field='#ffffff'),
 }
 
 
 def theme_style(name):
     c = THEMES[name]
     return f'''
-        QWidget {{ color: {c['text']}; font-size: 14px; }}
-        QMainWindow, QScrollArea, QWidget#page {{ background: {c['bg']}; }}
-        QGroupBox {{ background: {c['panel']}; border: 1px solid {c['border']};
-                    border-radius: 12px; margin-top: 16px; padding: 20px 14px 14px; }}
-        QGroupBox::title {{ subcontrol-origin: margin; left: 14px; padding: 0 6px; }}
+        QWidget {{ color: {c['text']}; font-family: "Segoe UI", "Noto Sans", sans-serif; font-size: 13px; }}
+        QMainWindow, QDialog, QScrollArea, QWidget#page {{ background: {c['bg']}; }}
+        QWidget#settingsPanel {{ background: {c['panel']}; }}
+        QGroupBox {{ border: 0; border-top: 1px solid {c['border']};
+                    border-radius: 0; margin-top: 12px; padding: 16px 0 0; }}
+        QGroupBox::title {{ subcontrol-origin: margin; left: 0; padding: 0 8px 0 0; color: {c['muted']}; }}
         QLabel {{ background: transparent; }}
-        QLabel#title {{ font-size: 28px; font-weight: 700; }}
+        QLabel#title {{ font-size: 16px; font-weight: 600; }}
         QLabel#muted {{ color: {c['muted']}; }}
-        QLabel#preview {{ background: #090e14; color: #c5d4e2; border-radius: 12px; }}
-        QLineEdit, QPlainTextEdit, QComboBox, QSpinBox {{ background: {c['field']};
-            border: 1px solid {c['border']}; border-radius: 6px; padding: 8px; }}
+        QLabel#preview {{ background: {c['bg']}; color: {c['muted']}; border: 1px solid {c['border']}; }}
+        QLabel#stats, QPlainTextEdit {{ font-family: "Consolas", "DejaVu Sans Mono", monospace; font-size: 12px; }}
+        QLabel#stats {{ color: {c['muted']}; }}
+        QLineEdit, QPlainTextEdit, QComboBox, QSpinBox {{ background: {c['bg']};
+            border: 1px solid {c['border']}; border-radius: 2px; padding: 6px; selection-background-color: {c['accent']}; }}
         QComboBox QAbstractItemView {{ background: {c['panel']}; color: {c['text']};
-            selection-background-color: {c['accent']}; selection-color: {c['ink']}; }}
+            selection-background-color: {c['field']}; selection-color: {c['text']}; }}
         QPushButton {{ background: {c['panel']}; border: 1px solid {c['border']};
-            border-radius: 7px; padding: 10px 16px; }}
-        QPushButton#primary {{ background: {c['accent']}; color: {c['ink']}; font-weight: 700; }}
-        QPushButton:hover {{ border: 1px solid {c['accent']}; }}
-        QPushButton:focus, QLineEdit:focus, QComboBox:focus, QPlainTextEdit:focus {{
-            border: 2px solid {c['accent']}; }}
-        QPushButton:disabled {{ color: {c['muted']}; background: {c['field']}; }}
+            border-radius: 2px; padding: 6px 12px; min-height: 18px; }}
+        QPushButton#primary {{ background: {c['accent']}; color: {c['ink']}; border-color: {c['accent']}; }}
+        QPushButton:hover {{ background: {c['field']}; }}
+        QPushButton#primary:hover {{ background: {c['hover']}; }}
+        QPushButton:focus, QLineEdit:focus, QComboBox:focus, QPlainTextEdit:focus, QSpinBox:focus {{
+            border: 1px solid {c['muted']}; }}
+        QPushButton:disabled, QPushButton#primary:disabled {{ color: {c['muted']}; background: {c['bg']}; border-color: {c['border']}; }}
         QCheckBox {{ spacing: 8px; }}
-        QToolTip {{ background: {c['panel']}; color: {c['text']}; }}
+        QCheckBox::indicator {{ width: 14px; height: 14px; }}
+        QCheckBox::indicator:unchecked {{ background: {c['bg']}; border: 1px solid {c['border']}; }}
+        QCheckBox:focus {{ color: {c['text']}; outline: 1px solid {c['muted']}; }}
+        QScrollBar:vertical {{ background: {c['bg']}; width: 12px; margin: 0; }}
+        QScrollBar::handle:vertical {{ background: {c['border']}; min-height: 24px; margin: 2px; }}
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
+        QToolTip {{ background: {c['panel']}; color: {c['text']}; border: 1px solid {c['border']}; }}
     '''
 
 
@@ -62,8 +73,8 @@ class Window(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Camera Mirror · Kamera melalui Wi-Fi')
-        self.resize(1060, 780)
-        self.setMinimumSize(680, 580)
+        self.resize(1040, 680)
+        self.setMinimumSize(680, 520)
         self.settings = QSettings('CameraMirror', 'DesktopCamera')
         self.frames = LatestFrame()
         self.camera = None
@@ -90,12 +101,13 @@ class Window(QMainWindow):
         page = QWidget()
         page.setObjectName('page')
         layout = QVBoxLayout(page)
-        layout.setContentsMargins(24, 18, 24, 18)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
         header = QHBoxLayout()
-        title = QLabel('Kamera dekat, meski beda perangkat.')
+        title = QLabel('Camera Mirror')
         title.setObjectName('title')
         title.setWordWrap(True)
-        header.addWidget(title, 1)
+        header.addWidget(title)
         self.theme = QComboBox()
         self.theme.addItem('Gelap', 'dark')
         self.theme.addItem('Terang', 'light')
@@ -104,24 +116,46 @@ class Window(QMainWindow):
         self.theme.currentIndexChanged.connect(self.apply_theme)
         header.addWidget(self.theme)
         layout.addLayout(header)
-        subtitle = QLabel('Bagikan kamera laptop ke desktop melalui jaringan lokal yang sama. '
-                          'Prototipe kamera • satu pengirim, satu penerima.')
-        subtitle.setWordWrap(True)
+        subtitle = QLabel(' /  Kamera komputer')
         subtitle.setObjectName('muted')
-        layout.addWidget(subtitle)
+        header.insertWidget(1, subtitle, 1)
 
-        role_box = QGroupBox('1. Komputer ini digunakan untuk apa?')
+        self.workspace = QHBoxLayout()
+        self.workspace.setSpacing(16)
+        settings_panel = QWidget()
+        settings_panel.setObjectName('settingsPanel')
+        settings_panel.setMinimumWidth(288)
+        settings_layout = QVBoxLayout(settings_panel)
+        settings_layout.setContentsMargins(12, 12, 12, 12)
+        settings_layout.setSpacing(12)
+        settings_scroll = QScrollArea()
+        self.settings_scroll = settings_scroll
+        settings_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        settings_scroll.setWidgetResizable(True)
+        settings_scroll.setWidget(settings_panel)
+        settings_scroll.setFixedWidth(312)
+        self.workspace.addWidget(settings_scroll)
+        monitor = QVBoxLayout()
+        monitor.setSpacing(12)
+        self.workspace.addLayout(monitor, 1)
+        layout.addLayout(self.workspace, 1)
+
+        role_box = QGroupBox('Mode koneksi')
         role_layout = QVBoxLayout(role_box)
+        role_layout.setContentsMargins(0, 0, 0, 0)
         self.role = QComboBox()
-        self.role.addItem('Kirim — bagikan kamera laptop ini', 'send')
-        self.role.addItem('Terima — gunakan kamera perangkat lain', 'receive')
+        self.role.addItem('Kirim kamera', 'send')
+        self.role.addItem('Terima kamera', 'receive')
         self.role.setAccessibleName('Peran komputer')
         self.role.currentIndexChanged.connect(self.change_role)
         role_layout.addWidget(self.role)
-        layout.addWidget(role_box)
+        settings_layout.addWidget(role_box)
 
-        self.send_box = QGroupBox('2. Pilih kamera dan jaringan')
+        self.send_box = QGroupBox('Sumber kamera')
         form = QFormLayout(self.send_box)
+        form.setContentsMargins(0, 0, 0, 0)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        form.setVerticalSpacing(8)
         camera_row = QHBoxLayout()
         self.cameras = QComboBox()
         self.cameras.setMinimumContentsLength(16)
@@ -152,10 +186,11 @@ class Window(QMainWindow):
         network_help.setWordWrap(True)
         network_help.setObjectName('muted')
         form.addRow(network_help)
-        layout.addWidget(self.send_box)
+        settings_layout.addWidget(self.send_box)
 
-        self.receive_box = QGroupBox('2. Sambungkan kamera pengirim')
+        self.receive_box = QGroupBox('Undangan pengirim')
         receiver = QVBoxLayout(self.receive_box)
+        receiver.setContentsMargins(0, 0, 0, 0)
         self.incoming = QPlainTextEdit()
         self.incoming.setPlaceholderText('Tempel seluruh undangan cm1:… dari laptop pengirim')
         self.incoming.setAccessibleName('Undangan kamera dari pengirim')
@@ -166,10 +201,12 @@ class Window(QMainWindow):
         self.destination_hint.setWordWrap(True)
         receiver.addWidget(self.destination_hint)
         self.receive_box.hide()
-        layout.addWidget(self.receive_box)
+        settings_layout.addWidget(self.receive_box)
 
         self.advanced = QGroupBox('Pengaturan lanjutan')
         advanced_layout = QFormLayout(self.advanced)
+        advanced_layout.setContentsMargins(0, 0, 0, 0)
+        advanced_layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
         self.port = QSpinBox()
         self.port.setRange(1024, 65535)
         self.port.setValue(8765)
@@ -178,16 +215,18 @@ class Window(QMainWindow):
         self.virtual_device.setPlaceholderText('Otomatis; Linux: /dev/video10 jika sudah disiapkan')
         self.virtual_device.setText(self.settings.value('virtual_device', ''))
         advanced_layout.addRow('Perangkat virtual', self.virtual_device)
-        self.preview_only = QCheckBox('Preview diagnostik saja (tidak tersedia sebagai webcam)')
+        self.preview_only = QCheckBox('Preview diagnostik saja')
+        self.preview_only.setToolTip('Tidak tersedia sebagai webcam virtual.')
         advanced_layout.addRow(self.preview_only)
         self.advanced.hide()
-        self.advanced_toggle = QPushButton('Tampilkan pengaturan lanjutan')
+        self.advanced_toggle = QPushButton('Pengaturan lanjutan')
         self.advanced_toggle.clicked.connect(self.toggle_advanced)
-        layout.addWidget(self.advanced_toggle, alignment=Qt.AlignmentFlag.AlignLeft)
-        layout.addWidget(self.advanced)
+        settings_layout.addWidget(self.advanced_toggle)
+        settings_layout.addWidget(self.advanced)
 
-        self.invite_box = QGroupBox('3. Salin undangan ini ke komputer penerima')
+        self.invite_box = QGroupBox('Undangan untuk penerima')
         invite_layout = QVBoxLayout(self.invite_box)
+        invite_layout.setContentsMargins(0, 0, 0, 0)
         self.outgoing = QPlainTextEdit()
         self.outgoing.setReadOnly(True)
         self.outgoing.setFixedHeight(72)
@@ -197,23 +236,26 @@ class Window(QMainWindow):
         self.copy.clicked.connect(lambda: QApplication.clipboard().setText(self.outgoing.toPlainText()))
         invite_layout.addWidget(self.copy, alignment=Qt.AlignmentFlag.AlignLeft)
         self.invite_box.hide()
-        layout.addWidget(self.invite_box)
+        settings_layout.insertWidget(3, self.invite_box)
+        settings_layout.addStretch()
 
-        self.preview = QLabel('Preview kamera akan muncul di sini.')
+        preview_heading = QLabel('Pratinjau')
+        monitor.addWidget(preview_heading)
+        self.preview = QLabel('Kamera tidak aktif.\nMulai sesi untuk menampilkan gambar.')
         self.preview.setObjectName('preview')
         self.preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.preview.setMinimumHeight(180)
-        self.preview.setMaximumHeight(280)
+        self.preview.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self.preview.setMinimumWidth(1)
-        layout.addWidget(self.preview, 1)
+        monitor.addWidget(self.preview, 1)
         self.stats = QLabel('Belum ada stream aktif.')
         self.stats.setWordWrap(True)
-        self.stats.setObjectName('muted')
-        layout.addWidget(self.stats)
+        self.stats.setObjectName('stats')
+        monitor.addWidget(self.stats)
         self.status = QLabel('Siap. Pilih Kirim di laptop atau Terima di desktop.')
         self.status.setWordWrap(True)
         self.status.setAccessibleName('Status koneksi kamera')
-        layout.addWidget(self.status)
+        monitor.addWidget(self.status)
         actions = QHBoxLayout()
         self.start_button = QPushButton('Mulai bagikan kamera')
         self.start_button.setObjectName('primary')
@@ -229,19 +271,15 @@ class Window(QMainWindow):
         actions.addWidget(help_button)
         layout.addLayout(actions)
         if sys.platform == 'linux':
-            legacy = QPushButton('Buka kamera HP Android (fitur Linux yang sudah ada)')
+            legacy = QPushButton('Kamera HP Android')
             legacy.clicked.connect(self.open_android)
-            layout.addWidget(legacy, alignment=Qt.AlignmentFlag.AlignLeft)
-        note = QLabel('Menutup jendela ini menghentikan sesi kamera komputer. '
+            header.insertWidget(header.count()-1, legacy)
+        note = QLabel('Sesi berhenti saat jendela ditutup. '
                       'Mikrofon dan speaker masih menunggu tahap pengembangan berikutnya.')
         note.setWordWrap(True)
         note.setObjectName('muted')
         layout.addWidget(note)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setWidget(page)
-        self.setCentralWidget(scroll)
+        self.setCentralWidget(page)
         self.change_role()
 
     def apply_theme(self):
@@ -252,8 +290,10 @@ class Window(QMainWindow):
     def toggle_advanced(self):
         visible = not self.advanced.isVisible()
         self.advanced.setVisible(visible)
-        self.advanced_toggle.setText('Sembunyikan pengaturan lanjutan' if visible
-                                     else 'Tampilkan pengaturan lanjutan')
+        self.advanced_toggle.setText('Tutup pengaturan lanjutan' if visible
+                                     else 'Pengaturan lanjutan')
+        if visible:
+            QTimer.singleShot(0, lambda: self.settings_scroll.ensureWidgetVisible(self.preview_only))
 
     def change_role(self):
         sending = self.role.currentData() == 'send'
@@ -415,6 +455,8 @@ class Window(QMainWindow):
                     self.clear_invitation()
                     self.outgoing.setPlainText(value)
                     self.invite_box.setVisible(bool(value))
+                    if value:
+                        QTimer.singleShot(0, lambda: self.settings_scroll.ensureWidgetVisible(self.copy))
                 elif kind == 'output':
                     self.output_name = value
                 elif kind == 'error':

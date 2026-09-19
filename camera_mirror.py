@@ -25,16 +25,16 @@ from preview import Reader
 import wireless
 from stream_service import runtime_dir
 
-BG = '#111820'
-SURFACE = '#1b2632'
-TEXT = '#edf3f8'
-MUTED = '#b0bfce'
-BORDER = '#405267'
-ACCENT = '#8dcfff'
-ACCENT_HOVER = '#b4e0ff'
-SELECTED = '#294158'
-SUCCESS = '#8bd5a7'
-ERROR = '#ffb3a8'
+BG = '#1c1c1b'
+SURFACE = '#242423'
+TEXT = '#eeeeec'
+MUTED = '#b0b0ad'
+BORDER = '#3d3d3a'
+ACCENT = '#a14b45'
+ACCENT_HOVER = '#b35851'
+SELECTED = '#2e2e2c'
+SUCCESS = '#b0b0ad'
+ERROR = '#d68a82'
 FONT = 'Sans'
 
 
@@ -44,7 +44,7 @@ def label(parent, text='', size=10, color=TEXT, bold=False, **kwargs):
 
 
 class Button(tk.Canvas):
-    def __init__(self, parent, text, command, width=120, primary=False, height=40):
+    def __init__(self, parent, text, command, width=120, primary=False, height=32):
         super().__init__(parent, width=width, height=height, bg=parent.cget('bg'),
                          bd=0, highlightthickness=0, takefocus=1, cursor='hand2')
         self.text, self.command, self.primary = text, command, primary
@@ -79,17 +79,15 @@ class Button(tk.Canvas):
         self.delete('all')
         w, h = max(2, self.winfo_width()), max(2, self.winfo_height())
         fill = ACCENT if self.primary else SELECTED if self.selected else SURFACE
-        ink = SURFACE if self.primary else TEXT
+        ink = TEXT
         stroke = ACCENT if self.selected else BORDER
         if self.hover and self.enabled: fill = ACCENT_HOVER if self.primary else SELECTED
         if not self.enabled: fill, ink, stroke = BG, MUTED, BORDER
-        if self.focus_get() == self: stroke = ACCENT
-        if self.primary: stroke = fill
-        r = 10
-        self.create_polygon(r, 1, w-r, 1, w-1, 1, w-1, r, w-1, h-r, w-1, h-1,
-                            w-r, h-1, r, h-1, 1, h-1, 1, h-r, 1, r, 1, 1,
-                            smooth=True, fill=fill, outline=stroke, width=1)
-        self.create_text(w/2, h/2, text=self.text, fill=ink, font=(FONT, 10, 'bold'))
+        if self.primary and self.enabled: stroke = fill
+        if self.focus_get() == self: stroke = TEXT
+        self.create_rectangle(1, 1, w-1, h-1, fill=fill, outline=stroke, width=1)
+        self.create_text(w/2, h/2, text=self.text, fill=ink, font=(FONT, 10))
+
 
 
 class App:
@@ -132,8 +130,8 @@ class App:
         self.wizard_status = tk.StringVar(value='')
         self.pair_address, self.pair_code, self.address = (tk.StringVar() for _ in range(3))
         root.title('Camera Mirror')
-        root.geometry('1120x740')
-        root.minsize(960, 700)
+        root.geometry('1040x640')
+        root.minsize(800, 520)
         root.configure(bg=BG)
         root.protocol('WM_DELETE_WINDOW', self.close)
         root.option_add('*TCombobox*Listbox.background', SURFACE)
@@ -142,78 +140,93 @@ class App:
         root.option_add('*TCombobox*Listbox.selectForeground', TEXT)
         style = ttk.Style(); style.theme_use('clam')
         style.configure('TCombobox', fieldbackground=SURFACE, background=SURFACE, foreground=TEXT,
-                        arrowcolor=ACCENT, bordercolor=BORDER, lightcolor=BORDER, darkcolor=BORDER,
-                        padding=9, font=(FONT,10))
+                        arrowcolor=MUTED, bordercolor=BORDER, lightcolor=BORDER, darkcolor=BORDER,
+                        padding=6, font=(FONT,10))
         style.map('TCombobox', fieldbackground=[('readonly',SURFACE)], foreground=[('readonly',TEXT)],
                   selectbackground=[('readonly',SURFACE)], selectforeground=[('readonly',TEXT)])
-        outer = tk.Frame(root, bg=BG, padx=28, pady=24); outer.pack(fill='both',expand=True)
-        outer.columnconfigure(0,weight=1);outer.rowconfigure(1,weight=1)
-        header = tk.Frame(outer,bg=BG); header.grid(row=0,column=0,sticky='ew',pady=(0,20))
-        heading = tk.Frame(header,bg=BG); heading.pack(side='left')
-        label(heading,'Camera Mirror',23,bold=True).pack(anchor='w')
-        label(heading,'Gunakan kamera HP untuk panggilan dan rekamanmu.',10,MUTED).pack(anchor='w',pady=(4,0))
-        Button(header,'Bantuan',self.help,90).pack(side='right')
-        Button(header,'Kamera komputer',self.open_desktop,154).pack(side='right',padx=(0,8))
-        content = tk.Frame(outer,bg=BG); content.grid(row=1,column=0,sticky='nsew')
-        content.columnconfigure(1,weight=1); content.rowconfigure(0,weight=1)
-        side_border=tk.Frame(content,bg=BORDER,padx=1,pady=1)
-        side_border.grid(row=0,column=0,sticky='ns',padx=(20,0))
-        side_border.grid_configure(padx=(0,20))
-        side=tk.Frame(side_border,bg=SURFACE,padx=20,pady=16,width=264)
-        side.pack(fill='both',expand=True)
-        label(side,'Pengaturan kamera',12,bold=True).pack(anchor='w',pady=(0,12))
-        label(side,'Koneksi',10,MUTED).pack(anchor='w',pady=(0,7))
-        row=tk.Frame(side,bg=SURFACE); row.pack(fill='x')
-        self.usb=Button(row,'Kabel USB',lambda:self.change_mode('usb'),108)
-        self.wifi=Button(row,'Wi-Fi',lambda:self.change_mode('wifi'),108)
-        self.usb.pack(side='left',padx=(0,5)); self.wifi.pack(side='left')
-        device=tk.Frame(side,bg=BG,padx=12,pady=6); device.pack(fill='x',pady=(8,4))
-        self.device_title=label(device,'Mencari HP…',11,bold=True,anchor='w')
+        outer = tk.Frame(root, bg=BG, padx=16, pady=16)
+        outer.pack(fill='both', expand=True)
+        outer.columnconfigure(0, weight=1)
+        outer.rowconfigure(1, weight=1)
+        header = tk.Frame(outer, bg=BG)
+        header.grid(row=0, column=0, sticky='ew', pady=(0,16))
+        label(header, 'Camera Mirror', 12, bold=True).pack(side='left')
+        label(header, ' /  Kamera HP Android', 10, MUTED).pack(side='left', padx=(8,0))
+        Button(header, 'Bantuan', self.help, 80).pack(side='right')
+        Button(header, 'Kamera komputer', self.open_desktop, 144).pack(side='right', padx=(0,8))
+
+        content = tk.Frame(outer, bg=BG)
+        content.grid(row=1, column=0, sticky='nsew')
+        content.columnconfigure(1, weight=1)
+        content.rowconfigure(0, weight=1)
+        side = tk.Frame(content, bg=SURFACE, padx=12, pady=12)
+        side.grid(row=0, column=0, sticky='ns', padx=(0,16))
+        label(side, 'Koneksi', 10, MUTED).pack(anchor='w', pady=(0,8))
+        row = tk.Frame(side, bg=SURFACE)
+        row.pack(fill='x')
+        self.usb = Button(row, 'Kabel USB', lambda:self.change_mode('usb'), 108)
+        self.wifi = Button(row, 'Wi-Fi', lambda:self.change_mode('wifi'), 108)
+        self.usb.pack(side='left', padx=(0,4))
+        self.wifi.pack(side='left')
+        device = tk.Frame(side, bg=SURFACE, pady=8)
+        device.pack(fill='x')
+        self.device_title = label(device, 'Mencari HP…', 10, anchor='w', wraplength=216)
         self.device_title.pack(fill='x')
-        self.device_hint=label(device,'Sambungkan kabel USB.',9,MUTED,wraplength=194,justify='left',anchor='w')
-        self.device_hint.pack(fill='x',pady=(4,0))
-        self.connection_button=Button(side,'Hubungkan HP',self.connection_action,222)
-        self.connection_button.pack(fill='x',pady=(4,8))
+        self.device_hint = label(device, 'Sambungkan kabel USB.', 9, MUTED,
+                                 wraplength=216, justify='left', anchor='w')
+        self.device_hint.pack(fill='x', pady=(4,0))
+        self.connection_button = Button(side, 'Hubungkan HP', self.connection_action, 220)
+        self.connection_button.pack(fill='x', pady=(0,8))
         self.separator(side)
-        label(side,'Kamera',10,MUTED).pack(anchor='w',pady=(12,7))
-        row=tk.Frame(side,bg=SURFACE); row.pack(fill='x')
-        self.front=Button(row,'Depan',lambda:self.change_facing('front'),108)
-        self.back=Button(row,'Belakang',lambda:self.change_facing('back'),108)
-        self.front.pack(side='left',padx=(0,5)); self.back.pack(side='left')
-        label(side,'Kualitas gambar',10,MUTED).pack(anchor='w',pady=(12,7))
-        self.quality_select=ttk.Combobox(side,textvariable=self.quality,values=('Ringan · 720p','Full HD · 1080p'),state='readonly',width=20)
-        self.quality_select.pack(fill='x'); self.quality_select.bind('<<ComboboxSelected>>',self.change_quality)
-        self.fps_hint=label(side,'30 fps · diatur otomatis',9,MUTED,wraplength=220,justify='left',anchor='w')
-        self.fps_hint.pack(fill='x',pady=(8,0))
-        tk.Frame(side,bg=SURFACE,height=1).pack(fill='x',expand=True)
-        Button(side,'Pengaturan lanjutan',self.settings,222).pack(fill='x',side='bottom')
-        right_border=tk.Frame(content,bg=BORDER,padx=1,pady=1)
-        right_border.grid(row=0,column=1,sticky='nsew')
-        right=tk.Frame(right_border,bg=SURFACE,padx=18,pady=18);right.pack(fill='both',expand=True)
-        preview_header=tk.Frame(right,bg=SURFACE);preview_header.pack(fill='x',pady=(0,15))
-        label(preview_header,'Pratinjau',12,bold=True).pack(side='left')
-        self.badge=label(preview_header,'Kamera belum aktif',9,MUTED)
+        label(side, 'Kamera', 10, MUTED).pack(anchor='w', pady=(8,8))
+        row = tk.Frame(side, bg=SURFACE)
+        row.pack(fill='x')
+        self.front = Button(row, 'Depan', lambda:self.change_facing('front'), 108)
+        self.back = Button(row, 'Belakang', lambda:self.change_facing('back'), 108)
+        self.front.pack(side='left', padx=(0,4))
+        self.back.pack(side='left')
+        label(side, 'Kualitas gambar', 10, MUTED).pack(anchor='w', pady=(8,8))
+        self.quality_select = ttk.Combobox(side, textvariable=self.quality,
+            values=('Ringan · 720p','Full HD · 1080p'), state='readonly', width=20)
+        self.quality_select.pack(fill='x')
+        self.quality_select.bind('<<ComboboxSelected>>',self.change_quality)
+        self.fps_hint = label(side, '30 fps · otomatis', 9, MUTED, anchor='w')
+        self.fps_hint.pack(fill='x', pady=(8,0))
+        tk.Frame(side, bg=SURFACE, height=16).pack(fill='x', expand=True)
+
+        right = tk.Frame(content, bg=BG)
+        right.grid(row=0, column=1, sticky='nsew')
+        preview_header = tk.Frame(right, bg=BG)
+        preview_header.pack(fill='x', pady=(0,12))
+        label(preview_header, 'Pratinjau', 10).pack(side='left')
+        self.badge = label(preview_header, 'Kamera belum aktif', 9, MUTED)
         self.badge.pack(side='right')
-        self.canvas=tk.Canvas(right,bg=BG,highlightthickness=0,height=220)
-        self.canvas.pack(fill='both',expand=True)
-        self.canvas.bind('<Configure>',self.resize_preview)
-        meta=tk.Frame(right,bg=SURFACE);meta.pack(fill='x',pady=(12,14))
-        self.preview_info=label(meta,'Gambar kamera akan muncul di sini.',9,MUTED)
+        self.canvas = tk.Canvas(right, bg=BG, highlightbackground=BORDER,
+                                highlightthickness=1, height=180, width=1)
+        self.canvas.pack(fill='both', expand=True)
+        self.canvas.bind('<Configure>', self.resize_preview)
+        meta = tk.Frame(right, bg=BG)
+        meta.pack(fill='x', pady=(8,12))
+        self.preview_info = label(meta, 'Preview otomatis saat kamera aktif.', 9, MUTED,
+                                  wraplength=220, justify='left')
         self.preview_info.pack(side='left')
-        self.screen_button=Button(meta,'Padamkan layar HP',self.toggle_screen,164, height=36)
-        self.screen_button.pack(side='right',padx=(8,0))
+        self.screen_button = Button(meta, 'Padamkan layar HP', self.toggle_screen, 164)
+        self.screen_button.pack(side='right', padx=(8,0))
         self.separator(right)
-        controls=tk.Frame(right,bg=SURFACE);controls.pack(fill='x',pady=(18,0))
-        statusbox=tk.Frame(controls,bg=SURFACE);statusbox.pack(side='left',fill='x',expand=True)
-        self.state_title=label(statusbox,'Siap saat kamu siap.',12,bold=True)
-        self.state_title.pack(anchor='w')
-        self.notice=label(statusbox,textvariable=self.status,size=9,color=MUTED,wraplength=320,justify='left',anchor='w')
-        self.notice.pack(anchor='w',pady=(5,0))
-        self.main_button=Button(controls,'Mulai kamera',self.toggle,174,True,46)
-        self.main_button.pack(side='right',padx=(12,0))
-        footer=tk.Frame(outer,bg=BG);footer.grid(row=2,column=0,sticky='ew',pady=(12,0))
-        label(footer,'Di OBS atau aplikasi panggilan, pilih kamera “Android Webcam”.',9,MUTED).pack(side='left')
-        label(footer,'USB / Wi-Fi',9,MUTED).pack(side='right')
+        self.state_title = label(right, 'Menunggu HP', 10)
+        self.state_title.pack(anchor='w', pady=(12,4))
+        self.notice = label(right, textvariable=self.status, size=9, color=MUTED,
+                            wraplength=440, justify='left', anchor='w')
+        self.notice.pack(fill='x')
+        right.bind('<Configure>', lambda e:self.notice.configure(wraplength=max(200,e.width)))
+
+        footer = tk.Frame(outer, bg=BG)
+        footer.grid(row=2, column=0, sticky='ew', pady=(16,0))
+        self.main_button = Button(footer, 'Mulai kamera', self.toggle, 164, True)
+        self.main_button.pack(side='right', padx=(16,0))
+        Button(footer, 'Pengaturan lanjutan', self.settings, 172).pack(side='right', padx=(8,0))
+        label(footer, 'Output  /  Android Webcam', 9, MUTED).pack(anchor='w')
+        label(footer, 'Menutup panel membiarkan kamera berjalan.', 9, MUTED).pack(anchor='w', pady=(4,0))
         self.root.after(50,self.drain)
         self.root.after(16,self.preview_tick)
         self.scan()
@@ -451,7 +464,7 @@ class App:
             self.photo.paste(frame)
             c.coords(self.live_item,w/2,h/2)
         else:
-            c.delete('all');c.configure(bg='#202524')
+            c.delete('all');c.configure(bg='#1c1c1b')
             self.photo=ImageTk.PhotoImage(frame)
             self.live_item=c.create_image(w/2,h/2,image=self.photo)
 
@@ -459,18 +472,14 @@ class App:
         c=self.canvas;w,h=max(c.winfo_width(),1),max(c.winfo_height(),1)
         c.delete('all');self.live_item=None
         if self.frame_image is not None:
-            c.configure(bg='#202524')
+            c.configure(bg='#1c1c1b')
             image=ImageOps.contain(self.frame_image,(w,h),Image.Resampling.BILINEAR)
             self.photo=ImageTk.PhotoImage(image);self.live_item=c.create_image(w/2,h/2,image=self.photo)
         else:
             c.configure(bg=BG)
-            x,y=w/2,h/2-28
-            c.create_oval(x-44,y-44,x+44,y+44,fill=SELECTED,outline='')
-            c.create_rectangle(x-23,y-15,x+23,y+17,outline=MUTED,width=2)
-            c.create_line(x-13,y-15,x-8,y-22,x+8,y-22,x+13,y-15,fill=MUTED,width=2)
-            c.create_oval(x-8,y-8,x+8,y+8,outline=ACCENT,width=2)
-            c.create_text(x,y+65,text='Menghubungkan kamera…' if self.busy or self.running else 'Kamera belum dinyalakan',fill=TEXT,font=(FONT,17,'bold'))
-            c.create_text(x,y+94,text='Gambar akan muncul sebentar lagi.' if self.busy or self.running else 'Hubungkan HP dan klik Mulai kamera.',fill=MUTED,font=(FONT,10))
+            x,y=w/2,h/2
+            c.create_text(x,y-12,text='Menghubungkan kamera…' if self.busy or self.running else 'Kamera tidak aktif',fill=TEXT,font=(FONT,11))
+            c.create_text(x,y+12,text='Menunggu gambar dari HP.' if self.busy or self.running else 'Hubungkan HP, lalu mulai kamera.',fill=MUTED,font=(FONT,9))
 
     def connection_action(self):
         if self.selected():self.device_picker()
@@ -483,8 +492,8 @@ class App:
         win=tk.Toplevel(self.root,bg=BG);win.title(title);win.transient(self.root);win.resizable(False,False)
         win.geometry(f'+{self.root.winfo_x()+150}+{self.root.winfo_y()+90}')
         win.bind('<Escape>',lambda _:win.destroy());self.dialogs[name]=win
-        body=tk.Frame(win,bg=BG,padx=28,pady=24);body.pack(fill='both',expand=True)
-        label(body,title,20,bold=True).pack(anchor='w',pady=(0,10))
+        body=tk.Frame(win,bg=BG,padx=16,pady=16);body.pack(fill='both',expand=True)
+        label(body,title,12,bold=True).pack(anchor='w',pady=(0,10))
         return body
 
     def field(self,parent,title,var,secret=False):
@@ -492,21 +501,21 @@ class App:
         entry=tk.Entry(parent,textvariable=var,show='•' if secret else '',bg=SURFACE,fg=TEXT,
                        insertbackground=ACCENT,font=(FONT,11),relief='flat',highlightthickness=1,
                        highlightbackground=BORDER,highlightcolor=ACCENT)
-        entry.pack(fill='x',ipady=8)
+        entry.pack(fill='x',ipady=6)
         return entry
 
     def wireless_dialog(self):
         body=self.dialog('wireless','Hubungkan tanpa kabel')
         if body is None:return
         label(body,'Siapkan sekali. Setelah itu aplikasi akan mencari HP-mu\ndan menyambungkannya kembali secara otomatis.',10,MUTED,justify='left').pack(anchor='w')
-        steps=tk.Frame(body,bg=SURFACE,padx=18,pady=16);steps.pack(fill='x',pady=18)
+        steps=tk.Frame(body,bg=SURFACE,padx=12,pady=12);steps.pack(fill='x',pady=12)
         for number,text in [('1','Hubungkan HP ke Wi-Fi yang sama dengan komputer.'),('2','Pasang kabel USB dan izinkan USB debugging.'),('3','Klik tombol di bawah. Setelah terhubung, lepas kabel.')]:
             row=tk.Frame(steps,bg=SURFACE);row.pack(fill='x',pady=5)
             label(row,number,10,ACCENT,True,width=2).pack(side='left',padx=(0,10))
             label(row,text,10,wraplength=330,justify='left').pack(side='left')
         self.wizard_status.set('Kabel hanya diperlukan untuk penyiapan awal.')
         label(body,textvariable=self.wizard_status,size=10,color=SUCCESS,wraplength=410,justify='left').pack(anchor='w',pady=(0,12))
-        self.wifi_setup_button=Button(body,'Hubungkan otomatis',self.setup_wireless,430,True,44)
+        self.wifi_setup_button=Button(body,'Hubungkan otomatis',self.setup_wireless,430,True,32)
         self.wifi_setup_button.pack(fill='x')
         Button(body,'Tidak punya kabel USB?',self.pairing_dialog,430).pack(fill='x',pady=(8,0))
         label(body,'Gunakan jaringan pribadi yang kamu percaya.\nSetelah HP restart, penyiapan lewat kabel mungkin perlu diulang.',9,MUTED,justify='left').pack(anchor='w',pady=(14,0))
@@ -602,7 +611,7 @@ class App:
         body=self.dialog('settings','Pengaturan lanjutan')
         if body is None:return
         tk.Checkbutton(body,text='Sambungkan ulang Wi-Fi secara otomatis',variable=self.auto_connect,command=self.save,
-                       bg=BG,fg=TEXT,activebackground=BG,selectcolor=SURFACE,font=(FONT,10)).pack(anchor='w',pady=(5,16))
+                       bg=BG,fg=TEXT,activebackground=BG,activeforeground=TEXT,selectcolor=SURFACE,highlightcolor=TEXT,font=(FONT,10)).pack(anchor='w',pady=(5,16))
         for title,callback in [('Siapkan perangkat webcam',lambda:self.work(controller.prepare,'Menyiapkan webcam…',lambda _:self.status.set('Perangkat webcam siap.'))),
                                ('Perbaiki deteksi aplikasi',lambda:self.work(controller.rediscover,'Menyegarkan deteksi…',lambda result:self.status.set(result))),
                                ('Log kamera',self.show_logs)]:
