@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
-"""Camera Mirror — a quiet, guided desktop webcam application."""
+"""Android webcam UI; --desktop opens the Windows/Linux LAN camera prototype."""
+import sys
+
+# Dispatch before importing the legacy Linux service modules.
+if __name__ == '__main__' and (sys.platform == 'win32' or '--desktop' in sys.argv):
+    from desktop_camera import main
+    sys.exit(main())
+
 import queue
+from pathlib import Path
+import subprocess
 import threading
 import time
 import tkinter as tk
@@ -16,16 +25,16 @@ from preview import Reader
 import wireless
 from stream_service import runtime_dir
 
-BG = '#f3f0ea'
-SURFACE = '#fffcf7'
-TEXT = '#303534'
-MUTED = '#777b75'
-BORDER = '#dddcd4'
-ACCENT = '#485e70'
-ACCENT_HOVER = '#394f61'
-SELECTED = '#e7ecef'
-SUCCESS = '#5c7864'
-ERROR = '#a45c48'
+BG = '#111820'
+SURFACE = '#1b2632'
+TEXT = '#edf3f8'
+MUTED = '#b0bfce'
+BORDER = '#405267'
+ACCENT = '#8dcfff'
+ACCENT_HOVER = '#b4e0ff'
+SELECTED = '#294158'
+SUCCESS = '#8bd5a7'
+ERROR = '#ffb3a8'
 FONT = 'Sans'
 
 
@@ -72,8 +81,8 @@ class Button(tk.Canvas):
         fill = ACCENT if self.primary else SELECTED if self.selected else SURFACE
         ink = SURFACE if self.primary else TEXT
         stroke = ACCENT if self.selected else BORDER
-        if self.hover and self.enabled: fill = ACCENT_HOVER if self.primary else '#eae7e0'
-        if not self.enabled: fill, ink, stroke = '#eceae4', '#a6aaa3', '#e5e3dc'
+        if self.hover and self.enabled: fill = ACCENT_HOVER if self.primary else SELECTED
+        if not self.enabled: fill, ink, stroke = BG, MUTED, BORDER
         if self.focus_get() == self: stroke = ACCENT
         if self.primary: stroke = fill
         r = 10
@@ -144,6 +153,7 @@ class App:
         label(heading,'Camera Mirror',23,bold=True).pack(anchor='w')
         label(heading,'Gunakan kamera HP untuk panggilan dan rekamanmu.',10,MUTED).pack(anchor='w',pady=(4,0))
         Button(header,'Bantuan',self.help,90).pack(side='right')
+        Button(header,'Kamera komputer',self.open_desktop,154).pack(side='right',padx=(0,8))
         content = tk.Frame(outer,bg=BG); content.grid(row=1,column=0,sticky='nsew')
         content.columnconfigure(1,weight=1); content.rowconfigure(0,weight=1)
         side_border=tk.Frame(content,bg=BORDER,padx=1,pady=1)
@@ -157,7 +167,7 @@ class App:
         self.usb=Button(row,'Kabel USB',lambda:self.change_mode('usb'),108)
         self.wifi=Button(row,'Wi-Fi',lambda:self.change_mode('wifi'),108)
         self.usb.pack(side='left',padx=(0,5)); self.wifi.pack(side='left')
-        device=tk.Frame(side,bg='#f4f3ee',padx=12,pady=6); device.pack(fill='x',pady=(8,4))
+        device=tk.Frame(side,bg=BG,padx=12,pady=6); device.pack(fill='x',pady=(8,4))
         self.device_title=label(device,'Mencari HP…',11,bold=True,anchor='w')
         self.device_title.pack(fill='x')
         self.device_hint=label(device,'Sambungkan kabel USB.',9,MUTED,wraplength=194,justify='left',anchor='w')
@@ -184,7 +194,7 @@ class App:
         label(preview_header,'Pratinjau',12,bold=True).pack(side='left')
         self.badge=label(preview_header,'Kamera belum aktif',9,MUTED)
         self.badge.pack(side='right')
-        self.canvas=tk.Canvas(right,bg='#eeece6',highlightthickness=0,height=220)
+        self.canvas=tk.Canvas(right,bg=BG,highlightthickness=0,height=220)
         self.canvas.pack(fill='both',expand=True)
         self.canvas.bind('<Configure>',self.resize_preview)
         meta=tk.Frame(right,bg=SURFACE);meta.pack(fill='x',pady=(12,14))
@@ -209,6 +219,12 @@ class App:
         self.scan()
         self.root.after(4000,self.periodic)
         self.update_ui()
+
+    def open_desktop(self):
+        root = Path(__file__).resolve().parent
+        environment = root / '.venv' / 'bin' / 'python'
+        executable = str(environment) if environment.exists() else sys.executable
+        subprocess.Popen([executable, str(root/'desktop_camera.py')], cwd=str(root))
 
     def separator(self,parent):
         tk.Frame(parent,bg=BORDER,height=1).pack(fill='x')
@@ -447,12 +463,12 @@ class App:
             image=ImageOps.contain(self.frame_image,(w,h),Image.Resampling.BILINEAR)
             self.photo=ImageTk.PhotoImage(image);self.live_item=c.create_image(w/2,h/2,image=self.photo)
         else:
-            c.configure(bg='#eeece6')
+            c.configure(bg=BG)
             x,y=w/2,h/2-28
-            c.create_oval(x-44,y-44,x+44,y+44,fill='#e2e3dc',outline='')
-            c.create_rectangle(x-23,y-15,x+23,y+17,outline='#7d877e',width=2)
-            c.create_line(x-13,y-15,x-8,y-22,x+8,y-22,x+13,y-15,fill='#7d877e',width=2)
-            c.create_oval(x-8,y-8,x+8,y+8,outline='#596e68',width=2)
+            c.create_oval(x-44,y-44,x+44,y+44,fill=SELECTED,outline='')
+            c.create_rectangle(x-23,y-15,x+23,y+17,outline=MUTED,width=2)
+            c.create_line(x-13,y-15,x-8,y-22,x+8,y-22,x+13,y-15,fill=MUTED,width=2)
+            c.create_oval(x-8,y-8,x+8,y+8,outline=ACCENT,width=2)
             c.create_text(x,y+65,text='Menghubungkan kamera…' if self.busy or self.running else 'Kamera belum dinyalakan',fill=TEXT,font=(FONT,17,'bold'))
             c.create_text(x,y+94,text='Gambar akan muncul sebentar lagi.' if self.busy or self.running else 'Hubungkan HP dan klik Mulai kamera.',fill=MUTED,font=(FONT,10))
 

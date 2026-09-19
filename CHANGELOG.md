@@ -1,5 +1,16 @@
 # Changelog
 
+## Belum dirilis — prototipe kamera desktop
+
+- Kamera antarkomputer melalui WebRTC LAN, capture Qt, dan adapter virtual camera
+  v4l2loopback Linux / OBS Windows. Pembuktian hardware dan silang OS masih menunggu.
+- Pairing undangan sementara dengan HTTPS/pin sertifikat, satu penerima, dan stop
+  yang melepaskan koneksi serta keluaran virtual.
+- UI desktop dark/light mode, alur Kirim/Terima, preview, dan bantuan penyiapan.
+- UI Android lama memakai warna gelap dan memiliki pintasan ke kamera komputer.
+- Tes media/UI sintetis, self-test transport, dan job CI desktop Ubuntu/Windows.
+- Audio, discovery komputer, reconnect otomatis, dan installer belum tersedia.
+
 ## v0.1.0 — 2026-09-14
 
 Rilis awal Camera Mirror untuk desktop Linux (CachyOS / Arch Linux).

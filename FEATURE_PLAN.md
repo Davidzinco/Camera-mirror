@@ -1,6 +1,18 @@
 # Rencana pengembangan Camera Mirror
 
-Tanggal: 19 September 2026. Status: **rencana, belum diimplementasikan**.
+Tanggal: 19 September 2026. Status: **prototipe Tahap A diimplementasikan;
+pembuktian kamera fisik/lintas OS masih menunggu perangkat**.
+Target pengguna dikonfirmasi: laptop **Windows 11** -> desktop **Linux**.
+Perangkat belum tersedia untuk diuji bersama saat implementasi ini.
+
+Implementasi tersedia di `desktop_camera.py` dan `camera_link/`, dengan petunjuk
+serta hasil pengujian di [docs/DESKTOP_CAMERA.md](docs/DESKTOP_CAMERA.md).
+Capture Qt, transport WebRTC, pairing HTTPS dengan pin sertifikat, adapter output
+virtual, stop, dan UI dark mode sudah ditulis. Pengujian lokal menggunakan video
+sintetis dan pengganti driver virtual; **belum memenuhi gerbang kamera fisik**.
+Discovery, reconnect otomatis, audio, dan installer masih tertunda sesuai urutan.
+Jalur Android Linux dipertahankan; warna UI lama juga diubah menjadi gelap.
+
 Dokumen ini menjadi catatan acuan untuk pekerjaan berikutnya. Checklist berarti
 pekerjaan yang harus dibuktikan, bukan kemampuan yang sudah tersedia.
 
@@ -23,7 +35,7 @@ Asumsi awal HP adalah Android, mengikuti proyek sekarang. iPhone belum termasuk
 komitmen dukungan. Versi minimum Windows, distro Linux, arsitektur CPU, dan versi
 dependensi ditetapkan setelah prototipe; jangan mengklaim semua versi OS didukung.
 
-## 2. Kondisi kode saat ini
+## 2. Kondisi kode saat rencana awal (sebelum prototipe)
 
 - UI memakai Tkinter/Pillow dengan warna terang di `camera_mirror.py`.
 - `backend.py` mengirim kamera Android melalui scrcpy ke `/dev/video10` dan
@@ -199,7 +211,7 @@ tanpa kamera. Keberhasilan preview saja tidak cukup untuk lanjut ke klaim MVP.
 
 - [ ] Pisahkan adapter OS dari logika bersama dan pertahankan jalur Android lama.
 - [ ] Implementasikan pairing, discovery/IP manual, worker, stop, dan reconnect.
-- [ ] Buat UI dasar dark mode dengan alur pengirim/penerima.
+- [x] Buat UI dasar dark mode dengan alur pengirim/penerima (Qt; pengujian offscreen Linux).
 - [ ] Sediakan penyiapan dependensi dan paket yang diuji pada mesin bersih.
 - [ ] Jalankan matriks koneksi silang OS di bawah ini.
 
@@ -267,3 +279,23 @@ hasil pengujian dan batasan nyata. Pertanyaan yang dapat dipastikan menjelang
 pengujian adalah versi OS/perangkat yang tersedia, Android atau iPhone, dan apakah
 relay HP -> laptop -> desktop juga diperlukan. Asumsi di atas cukup untuk memulai
 prototipe tanpa menunda prioritas kamera.
+
+
+## 13. Hasil implementasi prototipe
+
+- Entry point desktop terpisah menghindari import backend Linux di Windows.
+- Capture menggunakan Qt Multimedia; PyAV menangani frame untuk aiortc dan output.
+- Kamera virtual menggunakan v4l2loopback/OBS via pyvirtualcam; instalasi backend
+  masih manual. Tidak ada perubahan konfigurasi driver otomatis.
+- Pairing memakai undangan sekali untuk membuka sesi, berlaku lima menit,
+  pin sertifikat TLS, dan autentikasi stop. IP dipilih manual; tidak ada
+  penyimpanan identitas peer atau reconnect pada prototipe ini.
+- UI tema gelap/terang tersedia; preview diagnostik ditandai jelas sebagai mode
+  yang tidak menghasilkan webcam virtual. Kamera virtual adalah mode default.
+- 31 tes lokal lulus. Uji transport sintetis 720p selama 15 detik menerima
+  450 frame (30 fps); ini bukan pengukuran kamera fisik, Wi-Fi, atau latensi.
+- Matriks CI desktop Ubuntu/Windows disiapkan, belum ada hasil Windows di sesi ini.
+
+Checklist Tahap A tetap belum dicentang karena mencakup bukti pada kedua OS dan
+perangkat nyata. Tahap berikutnya: jalankan formulir pengujian Windows 11 -> Linux
+pada panduan desktop. Setelah gerbang terpenuhi, lanjutkan fondasi Tahap B dan audio.

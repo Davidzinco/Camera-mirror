@@ -2,10 +2,20 @@
 
 Rencana fitur kamera antarkomputer melalui Wi-Fi, mikrofon HP, audio, dukungan
 Windows/Linux, dan UI dark mode dicatat di [FEATURE_PLAN.md](FEATURE_PLAN.md).
-Dokumen tersebut adalah rencana pengembangan; fitur di dalamnya belum tersedia.
+Prototipe kamera antarkomputer sudah tersedia; status tiap tahap ada di dokumen tersebut.
+
+## Kamera laptop Windows 11 → desktop Linux (prototipe)
+
+Jalankan `desktop_camera.py` untuk UI kirim/terima dengan tema gelap/terang.
+Dependensi dan langkah pengujian ada di [panduan kamera desktop](docs/DESKTOP_CAMERA.md).
+Output kamera virtual sudah memiliki adapter Windows/Linux, tetapi kamera fisik,
+driver nyata, dan koneksi silang OS **belum teruji**. Mikrofon dan speaker belum
+tersedia. Fitur Android/Linux yang sudah ada dijelaskan di bawah ini.
+
+## Kamera Android pada Linux
 
 Aplikasi desktop untuk memakai kamera Android sebagai webcam Linux. Tampilan
-menggunakan krem, putih hangat, dan biru keabu-abuan. Pengaturan utama cukup
+kini menggunakan tema gelap dengan aksen biru. Pengaturan utama cukup
 **koneksi**, **kamera depan/belakang**, **kualitas**, dan **Mulai/Matikan kamera**.
 Video diatur ke **30 fps**, sesuai preferensi pengguna dan kemampuan HP yang diuji.
 
