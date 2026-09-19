@@ -60,6 +60,9 @@ def prepare(root, reinstall=False):
     if reinstall or saved != expected:
         marker.unlink(missing_ok=True)
         print('Memasang dependensi Camera Mirror. Unduhan pertama dapat memakan beberapa menit.', flush=True)
+        # Recover when an earlier venv creation stopped before pip was installed.
+        # This commonly happens before python3-venv is installed on Ubuntu/Debian.
+        run([python, '-m', 'ensurepip', '--upgrade'], root)
         run([python, '-m', 'pip', 'install', '-r', root/'requirements-desktop.txt'], root)
         probe(python, root)
         marker.write_text(expected+'\n')

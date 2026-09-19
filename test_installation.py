@@ -30,15 +30,17 @@ class InstallationTests(unittest.TestCase):
     @patch('scripts.bootstrap.run')
     def test_successful_install_is_reused_and_requirement_change_installs_again(self, run, probe):
         bootstrap.prepare(self.root)
-        self.assertEqual(run.call_count, 1)
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(run.call_args_list[0].args[0],
+                         [self.python, '-m', 'ensurepip', '--upgrade'])
         command = run.call_args.args[0]
         self.assertEqual(command[0], self.python)
         self.assertEqual(command[1:4], ['-m', 'pip', 'install'])
         bootstrap.prepare(self.root)
-        self.assertEqual(run.call_count, 1)
+        self.assertEqual(run.call_count, 2)
         (self.root/'requirements-desktop.txt').write_text('example-package==2\n')
         bootstrap.prepare(self.root)
-        self.assertEqual(run.call_count, 2)
+        self.assertEqual(run.call_count, 4)
         self.assertEqual(probe.call_count, 3)
 
     @patch('scripts.bootstrap.probe', side_effect=bootstrap.SetupError('Qt missing'))
