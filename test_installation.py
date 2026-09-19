@@ -64,7 +64,7 @@ class InstallationTests(unittest.TestCase):
             entry = bootstrap.linux_shortcut(self.root, self.python)
         text = entry.read_text()
         self.assertIn('Name=Camera Mirror', text)
-        self.assertIn('"'+str(self.python)+'"', text)
+        self.assertIn(bootstrap.desktop_quote(self.python), text)
         self.assertIn('"--launch"', text)
         # These values must not become field codes or command substitutions.
         quoted = bootstrap.desktop_quote('/tmp/100%/$cash/`literal`/"quoted"/path\\tail')
