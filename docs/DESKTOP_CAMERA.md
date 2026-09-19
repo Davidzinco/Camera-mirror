@@ -19,12 +19,18 @@ tervalidasi sampai matriks pengujian fisik selesai.
   jendela ditutup. Antrean antarbagian hanya menyimpan frame terbaru.
 
 Belum tersedia: discovery mDNS komputer, perangkat tepercaya persisten,
-reconnect otomatis, audio, relay HP -> laptop -> desktop, installer mandiri,
+reconnect otomatis, audio, relay HP -> laptop -> desktop, installer binary mandiri (.exe/AppImage),
 dan pemilihan bitrate/codec. Mode Android yang sudah ada tetap tersedia terpisah
 melalui `camera_mirror.py` pada Linux. Menutup jendela Android masih mengikuti
 perilaku lama: layanan kamera tetap berjalan sampai dihentikan.
 
 ## Instalasi aplikasi
+
+Cara termudah: unduh/ekstrak ZIP `main`, lalu jalankan **Install-Windows.cmd** atau
+**Install-Linux.sh**. Installer menyiapkan lingkungan Python dan pintasan pengguna.
+Lihat [langkah beberapa klik di README](../README.md#instalasi-mudah--mulai-di-sini).
+Bagian di bawah adalah alternatif manual. Driver kamera virtual tetap disiapkan
+terpisah pada komputer penerima.
 
 Jalankan perintah dari root repositori pada kedua komputer. Python **3.12 64-bit**
 adalah target job CI desktop; pengujian lokal pengembangan menggunakan Linux

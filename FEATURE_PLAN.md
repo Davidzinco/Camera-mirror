@@ -10,7 +10,7 @@ serta hasil pengujian di [docs/DESKTOP_CAMERA.md](docs/DESKTOP_CAMERA.md).
 Capture Qt, transport WebRTC, pairing HTTPS dengan pin sertifikat, adapter output
 virtual, stop, dan UI dark mode sudah ditulis. Pengujian lokal menggunakan video
 sintetis dan pengganti driver virtual; **belum memenuhi gerbang kamera fisik**.
-Discovery, reconnect otomatis, audio, dan installer masih tertunda sesuai urutan.
+Discovery, reconnect otomatis, audio, dan installer binary mandiri masih tertunda sesuai urutan.
 Jalur Android Linux dipertahankan; warna UI lama juga diubah menjadi gelap.
 
 Dokumen ini menjadi catatan acuan untuk pekerjaan berikutnya. Checklist berarti
@@ -299,3 +299,12 @@ prototipe tanpa menunda prioritas kamera.
 Checklist Tahap A tetap belum dicentang karena mencakup bukti pada kedua OS dan
 perangkat nyata. Tahap berikutnya: jalankan formulir pengujian Windows 11 -> Linux
 pada panduan desktop. Setelah gerbang terpenuhi, lanjutkan fondasi Tahap B dan audio.
+
+
+### Pembaruan instalasi mudah
+
+`Install-Windows.cmd` dan `Install-Linux.sh` menyiapkan dependensi dalam `.venv`
+dan membuat pintasan menu pengguna. Windows dapat memasang Python 3.12 melalui
+WinGet jika belum ada. README memuat alur beberapa klik dan prasyarat OS.
+Backend virtual camera tetap disiapkan terpisah; ini belum berupa paket `.exe`
+atau AppImage mandiri. CI ditambah pengujian bootstrap dan library Qt pada Ubuntu.

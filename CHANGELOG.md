@@ -2,6 +2,12 @@
 
 ## Belum dirilis — prototipe kamera desktop
 
+- Installer sumber yang dapat diklik pada Windows/Linux, penyiapan `.venv`,
+  pemasangan Python melalui WinGet bila diperlukan di Windows, dan pintasan menu.
+- README memprioritaskan instalasi mudah serta menjelaskan penyiapan driver terpisah.
+- CI Ubuntu memasang library runtime Qt yang sebelumnya menyebabkan import gagal;
+  workflow desktop juga memeriksa installer dan pemakaian ulang lingkungan.
+
 - Kamera antarkomputer melalui WebRTC LAN, capture Qt, dan adapter virtual camera
   v4l2loopback Linux / OBS Windows. Pembuktian hardware dan silang OS masih menunggu.
 - Pairing undangan sementara dengan HTTPS/pin sertifikat, satu penerima, dan stop
@@ -9,7 +15,7 @@
 - UI desktop dark/light mode, alur Kirim/Terima, preview, dan bantuan penyiapan.
 - UI Android lama memakai warna gelap dan memiliki pintasan ke kamera komputer.
 - Tes media/UI sintetis, self-test transport, dan job CI desktop Ubuntu/Windows.
-- Audio, discovery komputer, reconnect otomatis, dan installer belum tersedia.
+- Audio, discovery komputer, reconnect otomatis, dan installer binary mandiri belum tersedia.
 
 ## v0.1.0 — 2026-09-14
 
