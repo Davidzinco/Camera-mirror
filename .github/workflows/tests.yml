@@ -18,4 +18,30 @@ jobs:
       - name: Unit tests
         run: python -m unittest -v
       - name: Syntax check
-        run: python -m compileall -q .
+        run: python -m compileall -q -x "[.]venv" .
+  desktop-prototype:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Qt runtime libraries on Linux
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0 libpulse0 libxkbcommon0 libxcb-cursor0
+      - name: Check Windows installer interpreter detection
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: ./scripts/install-windows.ps1 -CheckOnly
+      - name: Install desktop dependencies
+        run: python scripts/bootstrap.py --no-shortcut
+      - name: Reuse installed environment
+        run: python scripts/bootstrap.py --no-shortcut
+      - name: Camera transport and UI tests
+        run: ${{ runner.os == 'Windows' && '.venv/Scripts/python.exe' || '.venv/bin/python' }} -m unittest -v test_installation test_camera_link integration_tests.test_desktop integration_tests.test_ui

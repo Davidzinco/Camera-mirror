@@ -1,0 +1,8 @@
+# Prototype desktop camera sharing; install in a virtual environment.
+PySide6>=6.8,<7
+aiortc>=1.14,<2
+aiohttp>=3.12,<4
+av>=14,<18
+numpy>=2,<3
+cryptography>=44,<51
+pyvirtualcam>=0.14,<1

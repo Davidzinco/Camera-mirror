@@ -1,11 +1,124 @@
 # Camera Mirror
 
+Gunakan kamera laptop sebagai webcam desktop melalui Wi-Fi, atau kamera Android
+sebagai webcam Linux. UI tersedia dalam tema gelap dengan kontrol ringkas.
+
+## Instalasi mudah — mulai di sini
+
+Unduh [ZIP versi main](https://github.com/Davidzinco/Camera-mirror/archive/refs/heads/main.zip),
+lalu **ekstrak seluruh folder** ke lokasi yang ingin dipakai permanen. Tidak perlu
+Git. Langkah berikut memasang mode kamera antarkomputer; koneksi internet dibutuhkan
+saat unduhan dependensi pertama kali.
+
+### Laptop Windows 11
+
+1. Buka folder hasil ekstraksi dan klik dua kali **`Install-Windows.cmd`**.
+2. Tunggu penyiapan selesai. Jika Python belum tersedia, installer mencoba
+   memasang Python 3.12 64-bit melalui WinGet; ikuti persetujuan yang muncul.
+3. Aplikasi terbuka. Pilih **Kirim kamera** untuk membagikan kamera laptop.
+
+Selanjutnya buka **Camera Mirror** dari Start Menu, atau klik kembali file yang
+sama. Paket yang sudah siap digunakan kembali. Jendela terminal menampilkan
+progres/error dan tetap terbuka selama aplikasi berjalan.
+
+Jika WinGet tidak tersedia, pasang [Python untuk Windows](https://www.python.org/downloads/windows/)
+64-bit versi 3.12, lalu klik installer lagi. Skrip memakai kebijakan eksekusi
+PowerShell hanya untuk proses installer; tidak mengubah kebijakan sistem permanen.
+**OBS tidak diperlukan pada laptop yang hanya mengirim kamera.**
+
+### Desktop Linux
+
+1. Buka folder hasil ekstraksi. Pada properti **`Install-Linux.sh`**, aktifkan
+   **Allow executing as a program / Is executable** jika diperlukan.
+2. Jalankan file tersebut dengan **Run in Terminal / Jalankan di terminal**.
+3. Setelah penyiapan selesai, aplikasi terbuka. Selanjutnya pilih **Camera Mirror**
+   dari menu aplikasi dan gunakan **Terima kamera**.
+
+Perilaku klik file `.sh` berbeda menurut pengelola berkas. Jika file justru dibuka
+sebagai teks, buka terminal pada folder hasil ekstraksi dan jalankan satu perintah:
+
+```bash
+bash Install-Linux.sh
+```
+
+Python 3 beserta dukungan `venv` harus tersedia. Installer membuat `.venv`, memasang
+dependensi aplikasi, dan menambahkan pintasan pengguna; jalankan **tanpa sudo**.
+Lokasi menu mengikuti `XDG_DATA_HOME` atau `~/.local/share/applications`.
+
+### Penyiapan kamera virtual pada penerima — sekali di awal
+
+Installer di atas memasang aplikasi. Agar gambarnya muncul sebagai webcam di OBS
+atau aplikasi panggilan, komputer **penerima** juga memerlukan backend kamera virtual:
+
+| Perangkat | Yang perlu disiapkan |
+| --- | --- |
+| Laptop Windows sebagai pengirim | Kamera fisik dan izin kamera Windows. |
+| Desktop Linux sebagai penerima | `v4l2loopback`, header kernel yang sesuai, dan perangkat loopback. |
+| Windows sebagai penerima (opsional) | OBS Studio beserta Virtual Camera; jangan jalankan output virtual OBS bersamaan. |
+
+Untuk CachyOS/Arch, pasang `v4l2loopback-dkms`, `v4l2loopback-utils`, dan header
+kernel aktif. [Panduan perangkat virtual Linux](docs/DESKTOP_CAMERA.md#desktop-linux)
+menjelaskan pembuatan `/dev/video20` dan pemilihannya pada pengaturan aplikasi.
+Langkah driver ini masih terpisah karena bergantung pada distro/kernel dan izin OS.
+
+Sesudah siap: klik **Kirim kamera** di laptop → **Mulai bagikan kamera** → salin
+undangan → tempel pada desktop dalam mode **Terima kamera** → **Hubungkan kamera**.
+Kemudian pilih kamera virtual tersebut di aplikasi panggilan. Kedua komputer harus
+berada pada LAN yang sama. Panduan lengkap ada di [kamera desktop](docs/DESKTOP_CAMERA.md).
+
+### Masalah instalasi
+
+- **Ubuntu/Debian: `venv` atau library Qt tidak tersedia.** Pasang prasyarat ini,
+  lalu jalankan installer lagi:
+
+  ```bash
+  sudo apt update
+  sudo apt install python3 python3-venv libegl1 libopengl0 libpulse0 libxkbcommon0 libxcb-cursor0
+  ```
+
+- **CachyOS/Arch: Python atau library Qt belum lengkap.** Paket dasar yang relevan:
+
+  ```bash
+  sudo pacman -S --needed python python-pip libglvnd libpulse libxkbcommon xcb-util-cursor
+  ```
+
+- **Unduhan gagal:** periksa internet/proxy, lalu jalankan installer lagi. Penyiapan
+  yang gagal tidak ditandai selesai; pip menampilkan detail error pada terminal.
+- **Windows memblokir skrip berdasarkan kebijakan organisasi:** gunakan instalasi
+  manual dalam [panduan desktop](docs/DESKTOP_CAMERA.md#instalasi-aplikasi), atau
+  minta pengelola perangkat menyiapkan dependensi. Installer bukan binary bertanda tangan.
+- **Folder dipindahkan:** `.venv` dan pintasan menyimpan lokasi lokal. Buat penyiapan
+  baru di lokasi tujuan; jangan menyalin `.venv` dari OS/folder lain.
+
+### Memperbarui atau menghapus
+
+Untuk memperbarui, tutup aplikasi dan ekstrak ZIP `main` terbaru ke folder yang
+sama, atau jalankan `git pull` jika memakai Git. Klik installer lagi; perubahan
+`requirements-desktop.txt` akan diperiksa dan dependensi disesuaikan bila perlu.
+
+Untuk menghapus, tutup aplikasi, hapus folder hasil ekstraksi, dan hapus pintasan
+**Camera Mirror** dari Start Menu atau berkas
+`~/.local/share/applications/camera-mirror-desktop.desktop` (sesuaikan jika
+`XDG_DATA_HOME` diatur). Python, OBS, dan modul kamera OS tidak dihapus oleh langkah ini.
+
+## Status pengembangan
+
 Rencana fitur kamera antarkomputer melalui Wi-Fi, mikrofon HP, audio, dukungan
 Windows/Linux, dan UI dark mode dicatat di [FEATURE_PLAN.md](FEATURE_PLAN.md).
-Dokumen tersebut adalah rencana pengembangan; fitur di dalamnya belum tersedia.
+Prototipe kamera antarkomputer sudah tersedia; status tiap tahap ada di dokumen tersebut.
+
+## Kamera laptop Windows 11 → desktop Linux (prototipe)
+
+Jalankan `desktop_camera.py` untuk UI kirim/terima dengan tema gelap/terang.
+Dependensi dan langkah pengujian ada di [panduan kamera desktop](docs/DESKTOP_CAMERA.md).
+Output kamera virtual sudah memiliki adapter Windows/Linux, tetapi kamera fisik,
+driver nyata, dan koneksi silang OS **belum teruji**. Mikrofon dan speaker belum
+tersedia. Fitur Android/Linux yang sudah ada dijelaskan di bawah ini.
+
+## Kamera Android pada Linux
 
 Aplikasi desktop untuk memakai kamera Android sebagai webcam Linux. Tampilan
-menggunakan krem, putih hangat, dan biru keabu-abuan. Pengaturan utama cukup
+menggunakan tema gelap netral dengan kontrol ringkas dan aksen merah redup. Pengaturan utama cukup
 **koneksi**, **kamera depan/belakang**, **kualitas**, dan **Mulai/Matikan kamera**.
 Video diatur ke **30 fps**, sesuai preferensi pengguna dan kemampuan HP yang diuji.
 
