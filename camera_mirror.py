@@ -2,8 +2,8 @@
 """Android webcam UI; --desktop opens the Windows/Linux LAN camera prototype."""
 import sys
 
-# Dispatch before importing the legacy Linux service modules.
-if __name__ == '__main__' and (sys.platform == 'win32' or '--desktop' in sys.argv):
+# Launch the unified modern UI by default; pass --legacy-tkinter for the old Tkinter GUI.
+if __name__ == '__main__' and '--legacy-tkinter' not in sys.argv:
     from desktop_camera import main
     sys.exit(main())
 

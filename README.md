@@ -1,7 +1,26 @@
 # Camera Mirror
 
-Gunakan kamera laptop sebagai webcam desktop melalui Wi-Fi, atau kamera Android
-sebagai webcam Linux. UI tersedia dalam tema gelap dengan kontrol ringkas.
+Gunakan kamera laptop sebagai webcam desktop melalui Wi-Fi, atau kamera HP Android
+sebagai webcam di Windows maupun Linux. UI modern hadir dalam tema gelap dengan
+kontrol ringkas dan kemudahan berpindah mode cukup dengan sekali klik.
+
+---
+
+## 🚀 Fitur & Pilihan Mode
+
+Aplikasi menyediakan dua mode utama yang dapat diakses langsung dari tombol di bagian atas:
+
+1. **`💻 Kamera Laptop ke PC (Wi-Fi)`**:
+   - Membagikan kamera laptop ke komputer desktop lain dalam jaringan LAN/Wi-Fi yang sama.
+   - Pilihan peran: **Kirim kamera** (di laptop) atau **Terima kamera** (di PC desktop).
+   - Pengiriman terenkripsi WebRTC berlatensi rendah dengan token pairing undangan mandiri.
+2. **`📱 Kamera HP Android ke PC`** *(Tersedia di Windows & Linux)*:
+   - Menggunakan kamera ponsel Android (depan/belakang) sebagai webcam komputer melalui USB atau Wi-Fi.
+   - Pemilihan resolusi (720p / 1080p), frame rate (15 / 30 / 60 FPS).
+   - Fitur **padamkan layar HP** untuk menghemat baterai dan menjaga suhu perangkat.
+   - Konversi sekali-klik dari kabel USB ke koneksi nirkabel Wi-Fi (`⚡ Jadikan Wi-Fi`).
+
+---
 
 ## Instalasi mudah — mulai di sini
 
@@ -115,12 +134,33 @@ Output kamera virtual sudah memiliki adapter Windows/Linux, tetapi kamera fisik,
 driver nyata, dan koneksi silang OS **belum teruji**. Mikrofon dan speaker belum
 tersedia. Fitur Android/Linux yang sudah ada dijelaskan di bawah ini.
 
-## Kamera Android pada Linux
+## Kamera HP Android pada Windows & Linux
 
-Aplikasi desktop untuk memakai kamera Android sebagai webcam Linux. Tampilan
-menggunakan tema gelap netral dengan kontrol ringkas dan aksen merah redup. Pengaturan utama cukup
-**koneksi**, **kamera depan/belakang**, **kualitas**, dan **Mulai/Matikan kamera**.
-Video diatur ke **30 fps**, sesuai preferensi pengguna dan kemampuan HP yang diuji.
+Aplikasi desktop untuk memakai kamera Android (depan/belakang) sebagai webcam komputer melalui USB atau Wi-Fi.
+
+### Prasyarat di HP Android:
+1. Android 12 atau yang lebih baru.
+2. Aktifkan **Opsi Pengembang (Developer Options)** dan hidupkan **Debugging USB (USB Debugging)**.
+
+### Prasyarat di Windows:
+1. Pasang paket `scrcpy` dan `adb` dengan menjalankan perintah ini di PowerShell/Terminal:
+   ```powershell
+   winget install Genymobile.scrcpy
+   ```
+2. Pasang **OBS Studio** (jika ingin menggunakan OBS Virtual Camera di Zoom, Discord, Teams, dsb.).
+3. Buka **Camera Mirror**, klik tombol **`📱 Kamera HP Android ke PC`** di atas, lalu klik **Mulai Kamera HP**.
+
+### Prasyarat di Linux (Ubuntu / Debian / Arch):
+- **Ubuntu/Debian**:
+  ```bash
+  sudo apt install scrcpy adb ffmpeg v4l2loopback-dkms v4l2loopback-utils
+  ```
+- **CachyOS / Arch Linux**:
+  ```bash
+  sudo pacman -S --needed scrcpy android-tools ffmpeg v4l2loopback-dkms v4l2loopback-utils
+  ```
+
+---
 
 ## Mulai
 

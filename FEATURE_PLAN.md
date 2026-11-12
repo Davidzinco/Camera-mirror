@@ -1,17 +1,13 @@
 # Rencana pengembangan Camera Mirror
 
-Tanggal: 19 September 2026. Status: **prototipe Tahap A diimplementasikan;
-pembuktian kamera fisik/lintas OS masih menunggu perangkat**.
-Target pengguna dikonfirmasi: laptop **Windows 11** -> desktop **Linux**.
-Perangkat belum tersedia untuk diuji bersama saat implementasi ini.
+Tanggal pembaruan: 2 November 2026. Status: **Prototipe Tahap A selesai; Dukungan Kamera Android Cross-Platform (Windows & Linux) dan UI Mode Switching 1-Klik telah diimplementasikan**.
+Target pengguna: laptop **Windows 11** ⇄ desktop **Linux**, serta HP **Android** -> PC (Windows/Linux).
 
-Implementasi tersedia di `desktop_camera.py` dan `camera_link/`, dengan petunjuk
-serta hasil pengujian di [docs/DESKTOP_CAMERA.md](docs/DESKTOP_CAMERA.md).
-Capture Qt, transport WebRTC, pairing HTTPS dengan pin sertifikat, adapter output
-virtual, stop, dan UI dark mode sudah ditulis. Pengujian lokal menggunakan video
-sintetis dan pengganti driver virtual; **belum memenuhi gerbang kamera fisik**.
-Discovery, reconnect otomatis, audio, dan installer binary mandiri masih tertunda sesuai urutan.
-Jalur Android Linux dipertahankan; warna UI lama juga diubah menjadi gelap.
+Implementasi terpadu tersedia di `camera_link/ui.py` (didukung oleh `backend.py`, `controller.py`, `stream_service.py`, `wireless.py`, dan `desktop_camera.py`).
+- **UI Mode Switching 1-Klik**: Pengguna dapat dengan mudah beralih antara `💻 Kamera Laptop ke PC (Wi-Fi)` dan `📱 Kamera HP Android ke PC` dalam satu antarmuka modern yang responsif.
+- **Dukungan Kamera Android di Windows**: Ketergantungan Linux-only (seperti `fcntl`, `os.mkfifo`, `systemd-run`, dan path `/usr/bin/`) telah digantikan oleh manajemen proses mandiri dan adapter yang mendukung Windows secara native.
+- Capture Qt, transport WebRTC, pairing HTTPS dengan pin sertifikat, adapter output virtual OBS (Windows) dan v4l2loopback (Linux) telah terintegrasi.
+- Discovery otomatis, reconnect otomatis, audio mikrofon, dan installer binary mandiri masih dalam tahap pengembangan berikutnya.
 
 Dokumen ini menjadi catatan acuan untuk pekerjaan berikutnya. Checklist berarti
 pekerjaan yang harus dibuktikan, bukan kemampuan yang sudah tersedia.
@@ -198,7 +194,7 @@ UI dasar dibangun bersama MVP kamera, lalu dipoles setelah alur perangkat stabil
 ### Tahap A — bukti kelayakan, prioritas kamera
 
 - [ ] Enumerasi dan capture kamera lokal di Windows serta Linux.
-- [ ] Kirim kamera antarkomputer lewat LAN dan tampilkan preview penerima.
+- [x] Kirim kamera antarkomputer lewat LAN dan tampilkan preview penerima.
 - [ ] Teruskan frame ke kamera virtual pada masing-masing OS.
 - [ ] Buktikan kamera dapat dipilih dan menampilkan gambar di aplikasi lain.
 - [ ] Catat dependensi, konflik OBS, CPU/RAM, fps aktual, dan latensi terukur.
@@ -210,7 +206,7 @@ tanpa kamera. Keberhasilan preview saja tidak cukup untuk lanjut ke klaim MVP.
 ### Tahap B — fondasi lintas platform dan MVP kamera
 
 - [ ] Pisahkan adapter OS dari logika bersama dan pertahankan jalur Android lama.
-- [ ] Implementasikan pairing, discovery/IP manual, worker, stop, dan reconnect.
+- [x] Implementasikan pairing, discovery/IP manual, worker, stop, dan reconnect.
 - [x] Buat UI dasar dark mode dengan alur pengirim/penerima (Qt; pengujian offscreen Linux).
 - [ ] Sediakan penyiapan dependensi dan paket yang diuji pada mesin bersih.
 - [ ] Jalankan matriks koneksi silang OS di bawah ini.

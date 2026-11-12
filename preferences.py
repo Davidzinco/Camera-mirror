@@ -34,7 +34,10 @@ def save(**changes):
         file.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         temp = file.with_suffix('.tmp')
         temp.write_text(json.dumps(state, indent=2))
-        temp.chmod(0o600)
+        try:
+            temp.chmod(0o600)
+        except OSError:
+            pass
         temp.replace(file)
 
 

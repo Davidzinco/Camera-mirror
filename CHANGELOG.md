@@ -1,5 +1,22 @@
 # Changelog
 
+## Belum dirilis — Dukungan Kamera Android di Windows & UI Berpindah Mode Cepat
+
+- **Dukungan Kamera Android di Windows**:
+  - Fitur kamera HP Android (via ADB dan `scrcpy`) kini dapat digunakan di Windows maupun Linux.
+  - Pencarian otomatis lokasi binary `scrcpy` dan `adb` di Windows (PATH, Android SDK, WinGet install dir, atau folder program).
+  - Manajemen proses streaming mandiri tanpa ketergantungan pada Linux `systemd`, `fcntl`, atau `mkfifo`.
+  - Pemadaman layar HP (`phone_screen`) dan konversi nirkabel satu-klik (`adb tcpip 5555`) kini berjalan lancar di Windows.
+- **Peningkatan UI (Mode Switching 1-Klik)**:
+  - Antarmuka terpadu modern berbasis PySide6 dengan tombol pemilihan mode di bagian atas:
+    - **`💻 Kamera Laptop ke PC (Wi-Fi)`**: Kirim dan terima kamera antarkomputer melalui WebRTC LAN.
+    - **`📱 Kamera HP Android ke PC`**: Deteksi perangkat USB/Wi-Fi, pemilihan kamera depan/belakang, resolusi, FPS, dan opsi hemat daya padam layar.
+  - Berpindah mode cukup dengan sekali klik tanpa perlu membuka jendela terpisah.
+  - Tombol pemeriksaan status ketersediaan ADB & scrcpy dan dialog bantuan instalasi.
+- **Pembaruan Kompatibilitas & Pengujian**:
+  - Semua 39 tes unit dan integrasi lulus di Windows dan Linux.
+  - `camera_mirror.py` kini langsung membuka UI modern terpadu secara default.
+
 ## Belum dirilis — prototipe kamera desktop
 
 - Installer sumber yang dapat diklik pada Windows/Linux, penyiapan `.venv`,

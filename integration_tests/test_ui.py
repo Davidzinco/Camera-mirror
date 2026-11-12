@@ -160,3 +160,29 @@ class DesktopUiTests(unittest.TestCase):
             sender_worker.stop()
             sender_worker.thread.join(5)
             self.assertFalse(sender_worker.thread.is_alive())
+
+    def test_mode_switching_and_android_ui(self):
+        w = self.window
+        self.assertEqual(w.stack.currentIndex(), 0)
+        self.assertEqual(w.mode_laptop_btn.objectName(), 'modeSelected')
+        self.assertEqual(w.mode_android_btn.objectName(), 'modeUnselected')
+
+        # Switch to Android mode with one click
+        w.mode_android_btn.click()
+        self.app.processEvents()
+        self.assertEqual(w.stack.currentIndex(), 1)
+        self.assertEqual(w.mode_android_btn.objectName(), 'modeSelected')
+        self.assertEqual(w.mode_laptop_btn.objectName(), 'modeUnselected')
+        self.assertIn('HP Android', w.subtitle.text())
+
+        # Verify Android controls
+        self.assertTrue(w.android_devices.isVisible())
+        self.assertTrue(w.android_start_btn.isEnabled())
+        self.assertFalse(w.android_stop_btn.isEnabled())
+
+        # Switch back to Laptop mode with one click
+        w.mode_laptop_btn.click()
+        self.app.processEvents()
+        self.assertEqual(w.stack.currentIndex(), 0)
+        self.assertEqual(w.mode_laptop_btn.objectName(), 'modeSelected')
+        self.assertIn('Laptop', w.subtitle.text())

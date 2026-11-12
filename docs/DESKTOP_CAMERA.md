@@ -18,11 +18,13 @@ tervalidasi sampai matriks pengujian fisik selesai.
 - Tema gelap/terang yang disimpan, bantuan koneksi, stop, dan penghentian saat
   jendela ditutup. Antrean antarbagian hanya menyimpan frame terbaru.
 
+- UI terpadu modern dengan mode switching 1-klik di bagian atas:
+  - **`💻 Kamera Laptop ke PC (Wi-Fi)`**: Berbagi kamera antarkomputer melalui WebRTC LAN.
+  - **`📱 Kamera HP Android ke PC`**: Mendukung ponsel Android sebagai webcam di Windows maupun Linux (via USB atau Wi-Fi).
+
 Belum tersedia: discovery mDNS komputer, perangkat tepercaya persisten,
-reconnect otomatis, audio, relay HP -> laptop -> desktop, installer binary mandiri (.exe/AppImage),
-dan pemilihan bitrate/codec. Mode Android yang sudah ada tetap tersedia terpisah
-melalui `camera_mirror.py` pada Linux. Menutup jendela Android masih mengikuti
-perilaku lama: layanan kamera tetap berjalan sampai dihentikan.
+reconnect otomatis, audio, relay HP -> laptop -> desktop, dan installer binary mandiri (.exe/AppImage).
+Pengguna Windows dapat memasang `scrcpy` & `adb` via `winget install Genymobile.scrcpy` untuk mode Android.
 
 ## Instalasi aplikasi
 

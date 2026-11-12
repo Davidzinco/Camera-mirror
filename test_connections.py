@@ -1,4 +1,5 @@
 import os
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -64,7 +65,8 @@ class WirelessTests(unittest.TestCase):
             self.assertEqual(state['facing'], 'front')
             self.assertEqual(len(state['wireless']), 1)
             self.assertEqual(state['wireless'][0]['address'], '192.168.1.21:5555')
-            self.assertEqual(preferences.path().stat().st_mode & 0o777, 0o600)
+            if sys.platform != 'win32':
+                self.assertEqual(preferences.path().stat().st_mode & 0o777, 0o600)
 
 
 if __name__ == '__main__':
