@@ -1,4 +1,7 @@
+import os
+from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -39,6 +42,27 @@ class BackendTests(unittest.TestCase):
     def test_command_failure_preserves_diagnostic(self, run):
         with self.assertRaisesRegex(RuntimeError, "Device unavailable"):
             backend.run(["adb", "devices"])
+
+    def test_install_hints_name_the_right_package(self):
+        with patch("backend.sys.platform", "win32"):
+            self.assertIn("Google.PlatformTools", backend.install_hint("adb"))
+            self.assertIn("Google.PlatformTools", backend.install_hint("C:/x/adb.exe"))
+            self.assertIn("Genymobile.scrcpy", backend.install_hint("scrcpy"))
+            self.assertIn("Camera Mirror lagi", backend.install_hint("ffmpeg"))
+
+    def test_winget_lookup_picks_the_executable_not_a_lookalike(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            package = root/'Microsoft'/'WinGet'/'Packages'/'Genymobile.scrcpy_x'/'scrcpy-win64-v5.0.1'
+            package.mkdir(parents=True)
+            (package/'scrcpy.exe').write_bytes(b'')
+            (package/'scrcpy-server').write_bytes(b'')
+            env = {'LOCALAPPDATA': str(root), 'USERPROFILE': str(root),
+                   'ProgramFiles': str(root/'programs'), 'PATH': ''}
+            with patch.dict(os.environ, env), patch("backend.shutil.which", return_value=None), \
+                    patch("backend.sys.platform", "win32"):
+                found = backend.find_executable('scrcpy')
+            self.assertEqual(Path(found).name, 'scrcpy.exe')
 
 
 if __name__ == "__main__":

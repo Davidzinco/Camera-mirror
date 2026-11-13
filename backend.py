@@ -17,44 +17,60 @@ def find_executable(name):
     found = shutil.which(name)
     if found:
         return found
-    if sys.platform == 'win32':
-        candidates = []
-        user_profile = Path(os.environ.get('USERPROFILE', ''))
-        local_app_data = Path(os.environ.get('LOCALAPPDATA', ''))
-        program_files = Path(os.environ.get('ProgramFiles', 'C:/Program Files'))
+    if sys.platform != 'win32':
+        return name
+    wanted = name if Path(name).suffix else name + '.exe'
+    candidates = []
+    user_profile = Path(os.environ.get('USERPROFILE', ''))
+    local_app_data = Path(os.environ.get('LOCALAPPDATA', ''))
+    program_files = Path(os.environ.get('ProgramFiles', 'C:/Program Files'))
 
-        # Check WinGet package directories
-        winget_pkg = local_app_data / 'Microsoft' / 'WinGet' / 'Packages'
-        if winget_pkg.is_dir():
-            try:
-                for match in winget_pkg.glob(f'**/{name}*'):
-                    if match.is_file() and match.suffix in ('.exe', ''):
-                        candidates.append(match)
-            except OSError:
-                pass
+    if name in ('adb', 'adb.exe'):
+        candidates.extend([
+            local_app_data / 'Android' / 'Sdk' / 'platform-tools' / 'adb.exe',
+            user_profile / 'scrcpy' / 'adb.exe',
+            Path('C:/scrcpy/adb.exe'),
+            program_files / 'scrcpy' / 'adb.exe',
+            Path('C:/platform-tools/adb.exe'),
+        ])
+    elif name in ('scrcpy', 'scrcpy.exe'):
+        candidates.extend([
+            user_profile / 'scrcpy' / 'scrcpy.exe',
+            local_app_data / 'Programs' / 'scrcpy' / 'scrcpy.exe',
+            Path('C:/scrcpy/scrcpy.exe'),
+            program_files / 'scrcpy' / 'scrcpy.exe',
+        ])
 
-        if name in ('adb', 'adb.exe'):
-            candidates.extend([
-                local_app_data / 'Android' / 'Sdk' / 'platform-tools' / 'adb.exe',
-                user_profile / 'scrcpy' / 'adb.exe',
-                Path('C:/scrcpy/adb.exe'),
-                program_files / 'scrcpy' / 'adb.exe',
-                Path('C:/platform-tools/adb.exe'),
-            ])
-        elif name in ('scrcpy', 'scrcpy.exe'):
-            candidates.extend([
-                user_profile / 'scrcpy' / 'scrcpy.exe',
-                local_app_data / 'Programs' / 'scrcpy' / 'scrcpy.exe',
-                Path('C:/scrcpy/scrcpy.exe'),
-                program_files / 'scrcpy' / 'scrcpy.exe',
-            ])
-        for candidate in candidates:
-            if candidate.is_file():
-                parent_dir = str(candidate.parent)
-                if parent_dir not in os.environ.get('PATH', ''):
-                    os.environ['PATH'] = parent_dir + os.pathsep + os.environ.get('PATH', '')
-                return str(candidate)
+    # Check WinGet package directories. Only the exact executable counts, so
+    # look-alikes such as scrcpy-server are never picked.
+    winget_pkg = local_app_data / 'Microsoft' / 'WinGet' / 'Packages'
+    if winget_pkg.is_dir():
+        try:
+            candidates.extend(sorted(path for path in winget_pkg.glob(f'**/{wanted}')
+                                     if path.is_file()))
+        except OSError:
+            pass
+
+    for candidate in candidates:
+        if candidate.is_file():
+            parent_dir = str(candidate.parent)
+            if parent_dir not in os.environ.get('PATH', ''):
+                os.environ['PATH'] = parent_dir + os.pathsep + os.environ.get('PATH', '')
+            return str(candidate)
     return name
+
+
+def install_hint(program):
+    """Hint shown when a required program is missing."""
+    if sys.platform != 'win32':
+        return "Pasang scrcpy & adb dari package manager distro Linux Anda."
+    name = Path(program).stem.lower()
+    if name == 'adb':
+        return ("Pasang dengan: winget install Google.PlatformTools "
+                "(paket scrcpy juga menyertakan adb)")
+    if name == 'scrcpy':
+        return "Pasang dengan: winget install Genymobile.scrcpy"
+    return "Pasang program tersebut lalu jalankan Camera Mirror lagi."
 
 
 def run(args, timeout=25, input_text=None):
@@ -66,9 +82,8 @@ def run(args, timeout=25, input_text=None):
                                 stderr=subprocess.STDOUT, timeout=timeout)
     except FileNotFoundError:
         prog = args[0]
-        hint = ("Pasang via: winget install Genymobile.scrcpy" if sys.platform == 'win32'
-                else "Pasang scrcpy & adb dari package manager distro Linux Anda.")
-        raise RuntimeError(f"Program '{prog}' belum terpasang atau tidak ditemukan di PATH. {hint}")
+        raise RuntimeError(f"Program '{prog}' belum terpasang atau tidak ditemukan di PATH. "
+                           f"{install_hint(prog)}")
     if result.returncode:
         raise RuntimeError(result.stdout.strip() or f"Perintah gagal: {args[0]}")
     return result.stdout.strip()

@@ -4,6 +4,12 @@ Gunakan kamera laptop sebagai webcam desktop melalui Wi-Fi, atau kamera HP Andro
 sebagai webcam di Windows maupun Linux. UI modern hadir dalam tema gelap dengan
 kontrol ringkas dan kemudahan berpindah mode cukup dengan sekali klik.
 
+> **Port Rust (dalam pengembangan).** Mode kamera HP Android sudah tersedia di
+> aplikasi Rust native (`rust/`), termasuk deteksi ADB, pairing wireless, dan
+> kontrol kamera scrcpy. Mode kamera laptop ⇄ PC (WebRTC) masih dilayani
+> aplikasi Python sampai tahap 2 selesai. Lihat [rust/README.md](rust/README.md)
+> dan [docs/RUST_PORT.md](docs/RUST_PORT.md).
+
 ---
 
 ## 🚀 Fitur & Pilihan Mode
@@ -103,6 +109,10 @@ berada pada LAN yang sama. Panduan lengkap ada di [kamera desktop](docs/DESKTOP_
 
 - **Unduhan gagal:** periksa internet/proxy, lalu jalankan installer lagi. Penyiapan
   yang gagal tidak ditandai selesai; pip menampilkan detail error pada terminal.
+- **Windows: pemeriksaan dependensi lambat atau gagal saat pertama dibuka.** Impor
+  pertama Qt dan PyAV dapat dipindai antivirus selama beberapa menit. Installer
+  menunggu hingga 180 detik dan mencoba dua kali; jika masih gagal, keluarkan folder
+  `.venv` dari karantina atau tambahkan pengecualian, lalu jalankan installer lagi.
 - **Windows memblokir skrip berdasarkan kebijakan organisasi:** gunakan instalasi
   manual dalam [panduan desktop](docs/DESKTOP_CAMERA.md#instalasi-aplikasi), atau
   minta pengelola perangkat menyiapkan dependensi. Installer bukan binary bertanda tangan.
@@ -126,6 +136,11 @@ Rencana fitur kamera antarkomputer melalui Wi-Fi, mikrofon HP, audio, dukungan
 Windows/Linux, dan UI dark mode dicatat di [FEATURE_PLAN.md](FEATURE_PLAN.md).
 Prototipe kamera antarkomputer sudah tersedia; status tiap tahap ada di dokumen tersebut.
 
+Aplikasi sedang dipindahkan ke Rust secara bertahap. Status parity, arsitektur,
+dan risiko (terutama kamera virtual Windows) ada di [docs/RUST_PORT.md](docs/RUST_PORT.md).
+Aplikasi Rust dapat dijalankan dengan `cd rust && cargo run -p camera-mirror-app`;
+aplikasi Python tetap menjadi jalur utama sampai port mencapai parity.
+
 ## Kamera laptop Windows 11 → desktop Linux (prototipe)
 
 Jalankan `desktop_camera.py` untuk UI kirim/terima dengan tema gelap/terang.
@@ -147,6 +162,8 @@ Aplikasi desktop untuk memakai kamera Android (depan/belakang) sebagai webcam ko
    ```powershell
    winget install Genymobile.scrcpy
    ```
+   Paket `scrcpy` sudah menyertakan `adb`. Untuk `adb` versi terbaru (berguna untuk
+   wireless debugging), pasang juga `winget install Google.PlatformTools`.
 2. Pasang **OBS Studio** (jika ingin menggunakan OBS Virtual Camera di Zoom, Discord, Teams, dsb.).
 3. Buka **Camera Mirror**, klik tombol **`📱 Kamera HP Android ke PC`** di atas, lalu klik **Mulai Kamera HP**.
 

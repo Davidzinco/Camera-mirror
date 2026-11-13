@@ -130,6 +130,7 @@ class Window(QMainWindow):
         self.last_error = False
         self.output_name = ''
         self.android_busy = False
+        self.android_stopping = False
 
         self._build()
         self.refresh_cameras()
@@ -866,13 +867,32 @@ class Window(QMainWindow):
         QMessageBox.warning(self, 'Error Kamera HP', message)
 
     def android_stop(self):
-        """Stop the Android camera stream."""
-        if not android_backend:
+        """Stop the Android camera stream without blocking the UI thread."""
+        if not android_backend or self.android_stopping:
             return
+        self.android_stopping = True
+        self.android_start_btn.setEnabled(False)
+        self.android_stop_btn.setEnabled(False)
         self.android_status.setText('Menghentikan kamera HP…')
-        android_backend.stop()
+
+        def worker():
+            try:
+                android_backend.stop()
+                QTimer.singleShot(0, self._android_stop_done)
+            except Exception as exc:
+                message = str(exc)
+                QTimer.singleShot(0, lambda: self._android_stop_done(message))
+
+        threading.Thread(target=worker, daemon=True, name='android-stop').start()
+
+    def _android_stop_done(self, error=None):
+        self.android_stopping = False
         self.android_start_btn.setEnabled(True)
         self.android_stop_btn.setEnabled(False)
+        if error:
+            self.android_status.setText(f'Gagal menghentikan kamera: {error}')
+            self.android_stats.setText('Stream mungkin masih aktif; cek Log Kamera.')
+            return
         self.android_status.setText('Kamera HP dihentikan.')
         self.android_stats.setText('Stream nonaktif.')
         self.android_preview.setText('Kamera HP tidak aktif.')
@@ -913,12 +933,28 @@ class Window(QMainWindow):
             QMessageBox.information(self, 'Pairing Wireless',
                                     'Isi alamat IP:Port dan kode pairing 6 angka dari layar Wireless Debugging HP.')
             return
-        try:
-            msg = android_backend.pair(addr, code)
-            QMessageBox.information(self, 'Pairing Sukses', msg)
-            self.android_refresh_devices()
-        except Exception as exc:
-            QMessageBox.warning(self, 'Pairing Gagal', str(exc))
+        self.android_pair_btn.setEnabled(False)
+        self.android_status.setText('Melakukan pairing wireless…')
+
+        def worker():
+            try:
+                msg = android_backend.pair(addr, code)
+                QTimer.singleShot(0, lambda: self._android_pair_done(msg))
+            except Exception as exc:
+                message = str(exc)
+                QTimer.singleShot(0, lambda: self._android_pair_done(None, message))
+
+        threading.Thread(target=worker, daemon=True, name='android-pair').start()
+
+    def _android_pair_done(self, message=None, error=None):
+        self.android_pair_btn.setEnabled(True)
+        if error:
+            self.android_status.setText(f'Pairing gagal: {error}')
+            QMessageBox.warning(self, 'Pairing Gagal', error)
+            return
+        self.android_status.setText('Pairing berhasil.')
+        QMessageBox.information(self, 'Pairing Sukses', message)
+        self.android_refresh_devices()
 
     def android_connect_device(self):
         """Connect to paired Wireless device."""
@@ -928,12 +964,27 @@ class Window(QMainWindow):
         if not addr:
             QMessageBox.information(self, 'Hubungkan IP', 'Isi alamat IP:Port nirkabel HP.')
             return
-        try:
-            msg = android_backend.connect(addr)
-            self.android_status.setText(f'Terhubung ke {addr}.')
-            self.android_refresh_devices()
-        except Exception as exc:
-            QMessageBox.warning(self, 'Gagal Terhubung', str(exc))
+        self.android_connect_btn.setEnabled(False)
+        self.android_status.setText(f'Menghubungkan ke {addr}…')
+
+        def worker():
+            try:
+                android_backend.connect(addr)
+                QTimer.singleShot(0, lambda: self._android_connect_done(addr))
+            except Exception as exc:
+                message = str(exc)
+                QTimer.singleShot(0, lambda: self._android_connect_done(addr, message))
+
+        threading.Thread(target=worker, daemon=True, name='android-connect').start()
+
+    def _android_connect_done(self, addr, error=None):
+        self.android_connect_btn.setEnabled(True)
+        if error:
+            self.android_status.setText(f'Gagal terhubung: {error}')
+            QMessageBox.warning(self, 'Gagal Terhubung', error)
+            return
+        self.android_status.setText(f'Terhubung ke {addr}.')
+        self.android_refresh_devices()
 
     def android_show_logs(self):
         """Display Android camera logs."""

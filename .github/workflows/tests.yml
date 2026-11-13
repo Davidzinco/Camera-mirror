@@ -19,6 +19,27 @@ jobs:
         run: python -m unittest -v
       - name: Syntax check
         run: python -m compileall -q -x "[.]venv" .
+  rust:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Install GUI build dependencies on Linux
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libgl1-mesa-dev
+      - name: Format check
+        run: cargo fmt --manifest-path rust/Cargo.toml --all -- --check
+      - name: Clippy
+        run: cargo clippy --manifest-path rust/Cargo.toml --workspace --all-targets -- -D warnings
+      - name: Rust tests
+        run: cargo test --manifest-path rust/Cargo.toml --workspace
+
   desktop-prototype:
     runs-on: ${{ matrix.os }}
     strategy:

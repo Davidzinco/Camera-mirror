@@ -1,5 +1,47 @@
 # Changelog
 
+## Belum dirilis — Port Rust tahap 1
+
+- Workspace Rust baru di `rust/` dengan dua crate: `camera-mirror-core` dan
+  `camera-mirror-app`.
+- Logika inti diport dan diuji ulang (36 tes Rust):
+  - undangan `cm1:` yang kompatibel dengan Python, gate pairing satu kali pakai,
+    mailbox frame terbaru, dan preferensi atomik;
+  - lapisan perintah ADB/scrcpy tanpa shell, dengan timeout, deteksi program,
+    parsing perangkat, pairing lewat stdin, serta validasi endpoint IPv4/IPv6;
+  - pemilihan mode kamera, validasi FPS, dan pencegahan klaim 60 fps dari
+    mode high-speed.
+- GUI native egui untuk mode kamera HP Android: daftar perangkat, pengaturan
+  kamera, pairing wireless, USB → Wi-Fi, mulai/berhenti scrcpy, log, dan tema.
+- Windows: renderer wgpu memakai Direct3D 12, bukan Vulkan, untuk menghindari
+  crash `0xc0000005` pada driver Vulkan Intel (`igvk64.dll`).
+- Tombol **Mulai Kamera HP** kini dipin di bagian bawah halaman Android dan isi
+  pratinjau dapat di-scroll, sehingga tombol tetap terlihat pada jendela pendek
+  atau penskalaan tampilan tinggi.
+- Pratinjau kamera HP tampil di dalam kotak pratinjau aplikasi Rust (Windows):
+  jendela scrcpy di-reparent ke jendela egui, mengikuti posisi kotak saat
+  digulir, dan disembunyikan saat dialog atau tab lain dibuka.
+- Perbaikan USB → Wi-Fi: koneksi diulang sampai ±10 detik setelah `adb tcpip`,
+  alamat IP dibaca dari interface mana pun yang memiliki IPv4 rute (bukan hanya
+  `wlan0`), identitas HP memakai fallback `ro.boot.serialno`, pesan galat
+  menyebut alamat yang dicoba, dan perangkat Wi-Fi langsung dipilih dengan label
+  `[WIFI]` setelah berhasil.
+- Perbaikan label mode perangkat: mode ditentukan dari serial (`IP:port` berarti
+  Wi-Fi), sehingga HP yang tersambung lewat USB tidak lagi ditandai `[WIFI]`.
+- Pekerjaan ADB dan scrcpy berjalan di thread latar sehingga UI tidak membeku.
+- Mode kamera laptop ⇄ PC dan kamera virtual menyusul pada tahap 2; aplikasi
+  Python tetap menjadi jalur utama sampai parity tercapai.
+- Dokumentasi: `rust/README.md` dan `docs/RUST_PORT.md` (parity matrix, desain
+  WebRTC/kamera virtual, risiko).
+- Perbaikan installer Python: pemeriksaan dependensi kini menunggu lebih lama
+  (180 detik, dua percobaan) untuk impor pertama yang lambat di Windows, mengimpor
+  Qt sebelum `pyvirtualcam` (urutan sebaliknya membuat CPython Windows crash), dan
+  menampilkan pesan pemulihan yang jelas.
+- Perbaikan deteksi alat Android: pencarian di folder paket WinGet hanya menerima
+  nama executable yang tepat, sehingga `scrcpy-server` tidak lagi terpilih sebagai
+  pengganti `scrcpy.exe`; petunjuk instalasi kini membedakan `scrcpy` dan
+  `Google.PlatformTools`.
+
 ## Belum dirilis — Dukungan Kamera Android di Windows & UI Berpindah Mode Cepat
 
 - **Dukungan Kamera Android di Windows**:

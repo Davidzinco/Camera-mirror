@@ -1,0 +1,15 @@
+[package]
+name = "camera-mirror-app"
+description = "Camera Mirror desktop application"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "camera-mirror"
+path = "src/main.rs"
+
+[dependencies]
+camera-mirror-core = { path = "../camera-mirror-core" }
+eframe = "0.37"
+raw-window-handle = "0.6.2"

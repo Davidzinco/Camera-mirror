@@ -59,6 +59,33 @@ class InstallationTests(unittest.TestCase):
             bootstrap.prepare(self.root)
         self.assertTrue((self.root/'.venv'/'.camera-mirror-ready').exists())
 
+    def test_probe_imports_qt_first(self):
+        # Importing pyvirtualcam before PySide6 crashes CPython on Windows.
+        self.assertLess(bootstrap.PROBE.index('PySide6'), bootstrap.PROBE.index('pyvirtualcam'))
+
+    @patch('scripts.bootstrap.subprocess.run')
+    def test_probe_retries_a_slow_first_import(self, run):
+        ok = subprocess.CompletedProcess(['python'], 0, '', '')
+        run.side_effect = [subprocess.TimeoutExpired(['python'], 180), ok]
+        bootstrap.probe(self.python, self.root, timeout=1)
+        self.assertEqual(run.call_count, 2)
+
+    @patch('scripts.bootstrap.subprocess.run',
+           side_effect=subprocess.TimeoutExpired(['python'], 180))
+    def test_probe_reports_a_clear_error_when_never_finishing(self, run):
+        with self.assertRaises(bootstrap.SetupError) as caught:
+            bootstrap.probe(self.python, self.root, timeout=1)
+        self.assertIn('installer lagi', str(caught.exception))
+        self.assertEqual(run.call_count, bootstrap.PROBE_ATTEMPTS)
+
+    @patch('scripts.bootstrap.subprocess.run')
+    def test_probe_reports_import_errors(self, run):
+        run.return_value = subprocess.CompletedProcess(['python'], 1, '', 'No module named av')
+        with self.assertRaises(bootstrap.SetupError) as caught:
+            bootstrap.probe(self.python, self.root)
+        self.assertIn('No module named av', str(caught.exception))
+        self.assertEqual(run.call_count, 1)
+
     def test_linux_shortcut_handles_spaces_and_exec_metacharacters(self):
         with patch.dict(os.environ, XDG_DATA_HOME=self.folder.name):
             entry = bootstrap.linux_shortcut(self.root, self.python)

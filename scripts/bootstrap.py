@@ -11,8 +11,14 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
-PROBE = ('import aiohttp, aiortc, av, numpy, cryptography, pyvirtualcam; '
-         'from PySide6 import QtWidgets, QtMultimedia, QtNetwork')
+PROBE = ('from PySide6 import QtWidgets, QtMultimedia, QtNetwork; '
+         'import aiohttp, aiortc, av, numpy, cryptography, pyvirtualcam')
+# Keep Qt first: importing pyvirtualcam first makes Windows CPython crash
+# (0xC0000005) when Qt is loaded afterwards.
+# The first import scans large Qt and OpenCV wheels and can be very slow on
+# Windows while antivirus checks every DLL, so allow for more than one try.
+PROBE_TIMEOUT = 180
+PROBE_ATTEMPTS = 2
 
 
 class SetupError(RuntimeError):
@@ -32,14 +38,26 @@ def requirement_stamp(root):
     return hashlib.sha256((root/'requirements-desktop.txt').read_bytes()).hexdigest()
 
 
-def probe(python, root):
-    result = subprocess.run([str(python), '-c', PROBE], cwd=root,
-                            capture_output=True, text=True, timeout=60)
-    if result.returncode:
-        detail = (result.stderr or result.stdout).strip()[-2000:]
-        raise SetupError('Dependensi belum dapat dimuat:\n' + detail +
-                         '\nLihat bagian Masalah instalasi di README.md. '
-                         'Library sistem Qt tidak dipasang oleh pip.')
+def probe(python, root, timeout=PROBE_TIMEOUT, attempts=PROBE_ATTEMPTS):
+    for attempt in range(1, attempts+1):
+        try:
+            result = subprocess.run([str(python), '-c', PROBE], cwd=root,
+                                    capture_output=True, text=True, timeout=timeout)
+        except subprocess.TimeoutExpired as exc:
+            print(f'Pemeriksaan dependensi belum selesai setelah {timeout} detik '
+                  f'(percobaan {attempt}/{attempts}).', file=sys.stderr, flush=True)
+            if attempt == attempts:
+                raise SetupError(
+                    'Dependensi lambat dimuat saat pertama dibuka. Tutup program '
+                    'lain, cek karantina antivirus, lalu jalankan installer lagi. '
+                    'Lihat bagian Masalah instalasi di README.md.') from exc
+            continue
+        if result.returncode:
+            detail = (result.stderr or result.stdout).strip()[-2000:]
+            raise SetupError('Dependensi belum dapat dimuat:\n' + detail +
+                             '\nLihat bagian Masalah instalasi di README.md. '
+                             'Library sistem Qt tidak dipasang oleh pip.')
+        return
 
 
 def prepare(root, reinstall=False):
