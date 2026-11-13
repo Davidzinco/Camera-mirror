@@ -1,7 +1,7 @@
 //! Owning the long-running scrcpy process and its log buffer.
 
 use super::camera::{CameraRequest, Platform, camera_command};
-use super::runner::{AndroidError, Result, find_executable};
+use super::runner::{AndroidError, Result, find_executable, hide_console_window};
 use std::collections::VecDeque;
 use std::io::{BufRead, BufReader};
 use std::process::{Child, Command, Stdio};
@@ -45,12 +45,8 @@ impl CameraSession {
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
-        if cfg!(windows) {
-            use std::os::windows::process::CommandExt;
-            const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-            // scrcpy still draws its own preview window; only the console is hidden.
-            command.creation_flags(CREATE_NO_WINDOW);
-        }
+        // scrcpy still draws its own preview window; only the console is hidden.
+        hide_console_window(&mut command);
         let mut child = command.spawn().map_err(|error| {
             if error.kind() == std::io::ErrorKind::NotFound {
                 AndroidError::MissingProgram {

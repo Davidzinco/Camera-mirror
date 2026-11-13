@@ -60,10 +60,8 @@ impl Runner for ProcessRunner {
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
-        if self.hide_window && cfg!(windows) {
-            use std::os::windows::process::CommandExt;
-            const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-            command.creation_flags(CREATE_NO_WINDOW);
+        if self.hide_window {
+            hide_console_window(&mut command);
         }
 
         let mut child = command.spawn().map_err(|error| {
@@ -126,6 +124,22 @@ impl Runner for ProcessRunner {
         }
     }
 }
+
+/// Hide the console window of a child process.
+///
+/// `cfg!(windows)` only guards runtime branches, so the `std::os::windows`
+/// import has to live behind a `#[cfg]` attribute to keep the crate building
+/// (and lint-clean) on Linux and macOS.
+#[cfg(windows)]
+pub(crate) fn hide_console_window(command: &mut Command) {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    command.creation_flags(CREATE_NO_WINDOW);
+}
+
+/// Hiding the console is a Windows-only concern; elsewhere this is a no-op.
+#[cfg(not(windows))]
+pub(crate) fn hide_console_window(_command: &mut Command) {}
 
 fn spawn_reader(mut stream: impl Read + Send + 'static) -> std::thread::JoinHandle<String> {
     std::thread::spawn(move || {
