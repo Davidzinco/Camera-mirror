@@ -30,6 +30,9 @@ fn windows_backends(requested: Option<eframe::wgpu::Backends>) -> eframe::wgpu::
 }
 
 fn main() -> eframe::Result<()> {
+    // `mut` is only needed by the Windows backend tweak below; without this
+    // attribute Clippy's `-D warnings` rejects the Linux build.
+    #[cfg_attr(not(target_os = "windows"), allow(unused_mut))]
     let mut options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_inner_size([1040.0, 700.0])
