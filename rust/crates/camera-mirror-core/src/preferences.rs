@@ -77,8 +77,14 @@ impl Preferences {
 
     pub fn save_to(&self, path: &Path) -> io::Result<()> {
         if let Some(parent) = path.parent() {
+            // Only tighten permissions on a directory this call actually
+            // created: chmod-ing an existing (possibly shared) parent such as
+            // /tmp fails for unprivileged users.
+            let existed = parent.exists();
             fs::create_dir_all(parent)?;
-            restrict_directory(parent)?;
+            if !existed {
+                restrict_directory(parent)?;
+            }
         }
         let temporary = path.with_extension("tmp");
         let json = serde_json::to_vec_pretty(self).map_err(io::Error::other)?;
